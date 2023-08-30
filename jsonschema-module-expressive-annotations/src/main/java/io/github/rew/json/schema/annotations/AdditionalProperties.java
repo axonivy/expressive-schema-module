@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Marker for a type, where not all valid properties/fields are known.
  * So any unknown property is accepted.
- * 
+ *
  * @see "https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties"
  */
 @Target({ElementType.TYPE})
