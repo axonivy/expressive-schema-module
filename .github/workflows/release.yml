@@ -1,17 +1,26 @@
 name: Release
 on:
-  release:
-    types: [created]
+  workflow_dispatch: 
+
 jobs:
-  publish:
+  deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
-      - name: Maven Library build and publish
-        uses: MathieuSoysal/Java-maven-library-publisher@v1.0.3
-        with:
-          nexus-username: ${{ secrets.NEXUS_USERNAME }}
-          nexus-password: ${{ secrets.NEXUS_PASSWORD }}
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          java-version: 17
+        - uses: actions/checkout@v3
+        - name: Set up Maven Central Repository
+          uses: actions/setup-java@v3
+          with:
+            java-version: '17'
+            distribution: 'temurin'
+            server-id: ossrh
+            server-username: MAVEN_USERNAME
+            server-password: MAVEN_PASSWORD
+            gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+            gpg-passphrase: MAVEN_GPG_PASSPHRASE
+        - name: Publish package
+          run: mvn --batch-mode -f pom.xml deploy -PossrhDeploy 
+          env:
+            MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+            MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+            MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
