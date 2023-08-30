@@ -20,3 +20,4 @@ jobs:
           java-version: 17
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_OPTS: "-Dsettings.security=/home/runner/.m2/settings.xml"
