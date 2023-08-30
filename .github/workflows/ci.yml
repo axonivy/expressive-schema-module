@@ -1,15 +1,10 @@
 name: CI-Build
 
 on: 
-  pull_request:
-  workflow_call:
-    inputs:
-      mvnArgs:
-        type: string
-        required: false
-    secrets:
-      mvnArgs:
-        required: false
+  push:
+  schedule:
+    - cron:  '21 21 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
