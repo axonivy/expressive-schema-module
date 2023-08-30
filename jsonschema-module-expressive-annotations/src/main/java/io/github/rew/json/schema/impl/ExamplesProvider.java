@@ -1,4 +1,4 @@
-package ch.monokellabs.json.schema.impl;
+package io.github.rew.json.schema.impl;
 
 import java.util.Arrays;
 
@@ -11,7 +11,7 @@ import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
-import ch.monokellabs.json.schema.annotations.Examples;
+import io.github.rew.json.schema.annotations.Examples;
 
 public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldScope> {
 

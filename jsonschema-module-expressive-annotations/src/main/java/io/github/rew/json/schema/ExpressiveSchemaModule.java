@@ -1,4 +1,4 @@
-package ch.monokellabs.json.schema;
+package io.github.rew.json.schema;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -11,10 +11,10 @@ import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.Module;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 
-import ch.monokellabs.json.schema.impl.ConditionalFieldProvider;
-import ch.monokellabs.json.schema.impl.ConfigNamingStrategy;
-import ch.monokellabs.json.schema.impl.ExamplesProvider;
-import ch.monokellabs.json.schema.impl.RemoteRefProvider;
+import io.github.rew.json.schema.impl.ConditionalFieldProvider;
+import io.github.rew.json.schema.impl.ConfigNamingStrategy;
+import io.github.rew.json.schema.impl.ExamplesProvider;
+import io.github.rew.json.schema.impl.RemoteRefProvider;
 
 
 public class ExpressiveSchemaModule implements Module {
@@ -39,7 +39,7 @@ public class ExpressiveSchemaModule implements Module {
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {
       configBuilder.forTypesInGeneral()
-        .withAdditionalPropertiesResolver(new ch.monokellabs.json.schema.impl.AdditionalPropsSupplier());
+        .withAdditionalPropertiesResolver(new io.github.rew.json.schema.impl.AdditionalPropsSupplier());
     }
     if (options.contains(ExpressiveSchemaOption.USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE)) {
       configBuilder.forFields()
