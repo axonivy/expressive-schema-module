@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.impl;
+package io.github.axonivy.json.schema.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +21,7 @@ import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 import com.github.victools.jsonschema.generator.SchemaVersion;
 
-import io.github.rew.json.schema.annotations.Condition;
+import io.github.axonivy.json.schema.annotations.Condition;
 
 public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 

@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.impl;
+package io.github.axonivy.json.schema.impl;
 
 import java.util.Arrays;
 
@@ -11,7 +11,7 @@ import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
-import io.github.rew.json.schema.annotations.Examples;
+import io.github.axonivy.json.schema.annotations.Examples;
 
 public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldScope> {
 

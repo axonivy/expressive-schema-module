@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.impl;
+package io.github.axonivy.json.schema.impl;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

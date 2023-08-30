@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.tests;
+package io.github.axonivy.json.schema.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.github.rew.json.schema.annotations.Examples;
+import io.github.axonivy.json.schema.annotations.Examples;
 
 class TestExampleValues {
 

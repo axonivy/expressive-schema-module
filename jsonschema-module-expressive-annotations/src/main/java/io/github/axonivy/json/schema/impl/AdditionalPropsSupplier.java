@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.impl;
+package io.github.axonivy.json.schema.impl;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -7,7 +7,7 @@ import java.util.Objects;
 import com.github.victools.jsonschema.generator.ConfigFunction;
 import com.github.victools.jsonschema.generator.TypeScope;
 
-import io.github.rew.json.schema.annotations.AdditionalProperties;
+import io.github.axonivy.json.schema.annotations.AdditionalProperties;
 
 public class AdditionalPropsSupplier implements ConfigFunction<TypeScope, Type> {
 

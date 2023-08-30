@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.impl;
+package io.github.axonivy.json.schema.impl;
 
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_ADDITIONAL_PROPERTIES;
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_REF;
@@ -12,7 +12,7 @@ import com.github.victools.jsonschema.generator.CustomPropertyDefinitionProvider
 import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 
-import io.github.rew.json.schema.annotations.RemoteRef;
+import io.github.axonivy.json.schema.annotations.RemoteRef;
 
 public class RemoteRefProvider implements CustomPropertyDefinitionProvider<FieldScope> {
 

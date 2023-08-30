@@ -4,21 +4,21 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.github.ivy-rew</groupId>
+  <groupId>io.github.axonivy</groupId>
   <artifactId>jsonschema-module-expressive-annotations</artifactId>
   <version>1.0.1-SNAPSHOT</version>
 
   <name>jsonschema expressive annotations module</name>
   <description>Simple annotations to provide json-schema hints right on your object models</description>
-  <url>https://github.com/ivy-rew/expressive-schema-module</url>
+  <url>https://github.com/axonivy/expressive-schema-module</url>
   <scm>
-    <connection>scm:git:git://github.com/ivy-rew/expressive-schema-module.git</connection>
-    <developerConnection>scm:git:ssh://github.com:ivy-rew/expressive-schema-module.git</developerConnection>
-    <url>http://github.com/ivy-rew/expressive-schema-module</url>
+    <connection>scm:git:git://github.com/axonivy/expressive-schema-module.git</connection>
+    <developerConnection>scm:git:ssh://github.com:axonivy/expressive-schema-module.git</developerConnection>
+    <url>http://github.com/axonivy/expressive-schema-module</url>
   </scm>
   <issueManagement>
     <system>github</system>
-    <url>https://github.com/ivy-rew/expressive-schema-module/issues</url>
+    <url>https://github.com/axonivy/expressive-schema-module/issues</url>
   </issueManagement>
   <licenses>
     <license>
@@ -30,7 +30,7 @@
     <developer>
       <name>Reguël Wermelinger</name>
       <email>r.wermelinger@gmail.com</email>
-      <organizationUrl>https://github.com/ivy-rew</organizationUrl>
+      <organizationUrl>https://github.com/axonivy</organizationUrl>
     </developer>
   </developers>
 

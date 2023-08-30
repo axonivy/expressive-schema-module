@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.tests;
+package io.github.axonivy.json.schema.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.github.rew.json.schema.annotations.Condition;
+import io.github.axonivy.json.schema.annotations.Condition;
 
 class TestFieldCondition {
 
