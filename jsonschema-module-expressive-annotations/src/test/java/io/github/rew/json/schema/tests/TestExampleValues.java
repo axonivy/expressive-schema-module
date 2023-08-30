@@ -1,4 +1,4 @@
-package ch.monokellabs.json.schema.tests;
+package io.github.rew.json.schema.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import ch.monokellabs.json.schema.annotations.Examples;
+import io.github.rew.json.schema.annotations.Examples;
 
 class TestExampleValues {
 

@@ -1,4 +1,4 @@
-package ch.monokellabs.json.schema.tests;
+package io.github.rew.json.schema.tests;
 
 import java.util.EnumSet;
 
@@ -10,8 +10,8 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
 
-import ch.monokellabs.json.schema.ExpressiveSchemaModule;
-import ch.monokellabs.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
+import io.github.rew.json.schema.ExpressiveSchemaModule;
+import io.github.rew.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
 
 public class ExpressiveSchemaGenerator {
 

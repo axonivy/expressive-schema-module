@@ -1,4 +1,4 @@
-package ch.monokellabs.json.schema.impl;
+package io.github.rew.json.schema.impl;
 
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.impl.DefinitionKey;

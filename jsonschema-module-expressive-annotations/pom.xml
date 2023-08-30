@@ -4,9 +4,35 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ch.monokellabs.json.schema</groupId>
+  <groupId>io.github.ivy-rew</groupId>
   <artifactId>jsonschema-module-expressive-annotations</artifactId>
   <version>1.0.0-SNAPSHOT</version>
+
+  <name>jsonschema expressive annotations module</name>
+  <description>Simple annotations to provide json-schema hints right on your object models</description>
+  <url>https://github.com/ivy-rew/expressive-schema-module</url>
+  <scm>
+    <connection>scm:git:git://github.com/ivy-rew/expressive-schema-module.git</connection>
+    <developerConnection>scm:git:ssh://github.com:ivy-rew/expressive-schema-module.git</developerConnection>
+    <url>http://github.com/ivy-rew/expressive-schema-module</url>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/ivy-rew/expressive-schema-module/issues</url>
+  </issueManagement>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Reguël Wermelinger</name>
+      <email>r.wermelinger@gmail.com</email>
+      <organizationUrl>https://github.com/ivy-rew</organizationUrl>
+    </developer>
+  </developers>
 
   <properties>
     <java.module.name>ch.monokellabs.json.schema.module.expressive.annotations</java.module.name>
@@ -51,5 +77,76 @@
     </plugins>
 
   </build>
+
+  <profiles>
+    <profile>
+      <id>ossrhDeploy</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <name>Central Repository OSSRH</name>
+          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>ossrh</id>
+          <name>Central Repository OSSRH</name>
+          <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.5.0</version>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.7</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

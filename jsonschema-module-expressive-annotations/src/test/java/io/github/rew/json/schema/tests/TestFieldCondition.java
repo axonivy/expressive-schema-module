@@ -1,4 +1,4 @@
-package ch.monokellabs.json.schema.tests;
+package io.github.rew.json.schema.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import ch.monokellabs.json.schema.annotations.Condition;
+import io.github.rew.json.schema.annotations.Condition;
 
 class TestFieldCondition {
 
