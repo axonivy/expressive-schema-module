@@ -1,4 +1,4 @@
-package io.github.rew.json.schema.annotations;
+package io.github.axonivy.json.schema.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
