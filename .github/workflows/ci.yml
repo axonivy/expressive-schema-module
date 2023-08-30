@@ -20,7 +20,6 @@ jobs:
         distribution: temurin
 
     - name: Build with Maven
-      working-directory: jsonschema-module-expressive-annotations
       run: mvn clean verify -Dmaven.test.failure.ignore=true --batch-mode
 
     - name: Publish Unit Test Results
