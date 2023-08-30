@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -21,7 +21,7 @@ jobs:
 
     - name: Build with Maven
       working-directory: jsonschema-module-expressive-annotations
-      run: mvn clean verify -Dmaven.test.failure.ignore=true --batch-mode ${{ inputs.mvnArgs }} ${{ secrets.mvnArgs }}
+      run: mvn clean verify -Dmaven.test.failure.ignore=true --batch-mode
 
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
