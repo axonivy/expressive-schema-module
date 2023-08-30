@@ -8,6 +8,29 @@
   <artifactId>jsonschema-module-expressive-annotations</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 
+  <name>jsonschema expressive annotations module</name>
+  <description>Simple annotations to provide json-schema hints right on your object models</description>
+  <url>https://github.com/ivy-rew/expressive-schema-module</url>
+  <scm>
+    <url>git@github.com:ivy-rew/expressive-schema-module.git</url>
+  </scm>
+  
+  
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Reguël Wermelinger</name>
+      <email>r.wermelinger@gmail.com</email>
+      <organizationUrl>https://github.com/ivy-rew</organizationUrl>
+    </developer>
+  </developers>
+
   <properties>
     <java.module.name>ch.monokellabs.json.schema.module.expressive.annotations</java.module.name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -48,8 +71,36 @@
           <testFailureIgnore>true</testFailureIgnore>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.5.0</version>
+      </plugin>
     </plugins>
 
   </build>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
