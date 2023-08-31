@@ -17,7 +17,7 @@ class TestExampleValues {
   }
 
   static class Examplified {
-    @Examples("superFastProvider")
+    @Examples({"superFastProvider", "speedBuster", "cheapAndSlow"})
     public String provider;
   }
 
