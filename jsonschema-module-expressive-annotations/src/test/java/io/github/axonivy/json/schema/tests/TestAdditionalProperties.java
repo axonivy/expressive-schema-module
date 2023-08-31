@@ -17,14 +17,12 @@ class TestAdditionalProperties {
   }
 
   static class AnyFieldsSchema {
-
     public Product product;
 
     @AdditionalProperties
     public static class Product {
       public String id;
     }
-
   }
 
 }

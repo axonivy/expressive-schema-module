@@ -122,3 +122,21 @@ Produces therefore:
 },
 "additionalProperties" : false
 ```
+
+## Options
+
+The module comes with a few opt-in schema features. See the `ExpressiveSchemaOption` enumeration.
+
+- `USE_ADDITIONAL_PROPERTIES_ANNOTATION`: disables any properties, unless you actually allow them by using the `@AdditionalProperties` annotation.
+- `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE`: contributes default values to the jsonschema by using Jacksons `@JsonPropert(defaultValue="myDefault")` annotation for the task.
+- `USE_SCHEMA_SUFFIX_NAMING_STRATEGY`: provides a naming strategy that cleans your types from 'Schema' suffixes. We use this for object models that were invented just for the sake of documenting jsonschema features. So we added 'Schema' postfixes to make them distinguable from real productive objects. In the generated schema however, these long names are removed.
+
+### Examples
+
+Enable all options programatically:
+```
+var configBuilder = new SchemaGeneratorConfigBuilder(VERSION, OptionPreset.PLAIN_JSON);
+configBuilder.with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
+configBuilder.with(new ExpressiveSchemaModule(EnumSet.allOf(ExpressiveSchemaOption.class)));
+```
+
