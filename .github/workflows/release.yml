@@ -35,6 +35,7 @@ jobs:
           run: |
             mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion} -DprocessAllModules -DgenerateBackupPoms=false versions:commit
             git add .
+            git commit -m "update versions for release"
         - name: Publish package
           run: mvn --batch-mode -f pom.xml deploy -PossrhDeploy 
           env:
