@@ -1,6 +1,12 @@
 name: Release
 on:
   workflow_dispatch: 
+    inputs:
+      snapshot:
+        type: boolean
+        default: true
+        description: whether to release a SNAPSHOT or final release, preparing the next dev cycle.
+  push:
 
 jobs:
   deploy:
@@ -18,6 +24,17 @@ jobs:
             server-password: MAVEN_PASSWORD
             gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
             gpg-passphrase: MAVEN_GPG_PASSPHRASE
+        - name: Configure Git
+          run: |
+            git config user.email "${{ github.actor }}@users.noreply.github.com"
+            git config user.name "${{ github.actor }}"
+            git checkout -b new-release
+
+        - name: Introduce final Release version
+          if: github.event.inputs.snapshot == 'false'
+          run: |
+            mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion} -DprocessAllModules -DgenerateBackupPoms=false versions:commit
+            git add .false
         - name: Publish package
           run: mvn --batch-mode -f pom.xml deploy -PossrhDeploy 
           env:
@@ -26,3 +43,21 @@ jobs:
             MAVEN_CENTRAL_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
             MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
             MAVEN_OPTS: "--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
+
+        - name: Prepare Next dev cycle
+          if: github.event.inputs.snapshot == 'false'
+          run: |
+            mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT -DprocessAllModules -DgenerateBackupPoms=false versions:commit
+            git add .
+            git commit -m "update versions for next dev-cycle"
+            git push -u origin new-release
+  
+        - name: Create pull request
+          if: github.event.inputs.snapshot == 'false'
+          uses: repo-sync/pull-request@v2
+          with:
+            destination_branch: ${{ steps.branch-name.outputs.current_branch }}
+            source_branch: new-release
+            pr_title: "Release"
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            pr_assignee: ${{ github.actor }}
