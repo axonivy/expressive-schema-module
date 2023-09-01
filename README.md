@@ -12,13 +12,13 @@ We supply frequently required json-schema hints by introducing annotations, that
 
 Simply annotate any field with `@Examples`, in order to supply valid values for it:
 
-```
+```java
 @Examples({"superFastProvider", "speedBuster", "cheapAndSlow"})
 public String provider;
 ```
 
 Will generate a schema as follows:
-```
+```json
 "properties" : {
   "provider" : {
     "type" : "string",
@@ -31,13 +31,13 @@ Will generate a schema as follows:
 
 Simplifies the inclusion ob other schemas, therefore enabling you to craft composite schemas.
 
-```
+```java
 @RemoteRef("/ivy/a-sibling.json")
 public Object sibling;
 ```
 
 Will generate a schema as follows:
-```
+```json
 "sibling" : {
   "$ref" : "/ivy/a-sibling.json"
 }
@@ -48,13 +48,13 @@ Will generate a schema as follows:
 
 Enables you to inject sibling schemas based on a selected constant.
 
-```
+```java
 @Condition(ifConst  = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
 public String provider;
 ```
 
 Will generate a schema as follows:
-```
+```json
 "properties" : {
   "provider" : {
     "type" : "string"
@@ -78,7 +78,7 @@ Will generate a schema as follows:
 
 Note that multiple conditions can be combined by using many instances of `@Condition` on a single field:
 
-```
+```java
 @Condition(ifConst  = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
 @Condition(ifConst  = "ms-ad", thenProperty = "config", thenRef = "/ivy/ldap-config.json")
 public String provider;
@@ -89,7 +89,7 @@ public String provider;
 With the `ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION` the schema only allows properties,  that are actually outlined in your object models.
 By adding the `@AdditionalProperties` annotation however, you can allow unspecified properties again.
 
-```
+```java
 static class AnyFieldsSchema {
   public Product product;
 
@@ -102,7 +102,7 @@ static class AnyFieldsSchema {
 
 Produces therefore:
 
-```
+```json
 "$schema" : "https://json-schema.org/draft/2019-09/schema",
 "$defs" : {
   "Product" : {
@@ -134,7 +134,7 @@ The module comes with a few opt-in schema features. See the `ExpressiveSchemaOpt
 ### Examples
 
 Enable all options programatically:
-```
+```java
 var configBuilder = new SchemaGeneratorConfigBuilder(VERSION, OptionPreset.PLAIN_JSON);
 configBuilder.with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 configBuilder.with(new ExpressiveSchemaModule(EnumSet.allOf(ExpressiveSchemaOption.class)));
