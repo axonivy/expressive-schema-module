@@ -12,7 +12,7 @@ class TestAdditionalProperties {
 
   @Test
   void allowsMoreProperties() {
-    ObjectNode schema = ExpressiveSchemaGenerator.generateSchema(AnyFieldsSchema.class);
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(AnyFieldsSchema.class);
     assertThat(schema.toPrettyString()).contains("additionalProperties");
   }
 

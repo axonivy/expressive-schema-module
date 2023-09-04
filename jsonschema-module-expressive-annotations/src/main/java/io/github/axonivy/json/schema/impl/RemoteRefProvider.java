@@ -16,6 +16,12 @@ import io.github.axonivy.json.schema.annotations.RemoteRef;
 
 public class RemoteRefProvider implements CustomPropertyDefinitionProvider<FieldScope> {
 
+  private final DynamicRefs refs;
+
+  public RemoteRefProvider(DynamicRefs refs) {
+    this.refs = refs;
+  }
+
   @Override
   public CustomPropertyDefinition provideCustomSchemaDefinition(FieldScope scope, SchemaGenerationContext context) {
     RemoteRef reference = scope.getAnnotation(RemoteRef.class);
@@ -30,12 +36,12 @@ public class RemoteRefProvider implements CustomPropertyDefinitionProvider<Field
       var map = context.getGeneratorConfig().createObjectNode();
       map.put(TAG_TYPE.forVersion(version), TAG_TYPE_OBJECT.forVersion(version));
       var additional = map.putObject(TAG_ADDITIONAL_PROPERTIES.forVersion(version));
-      additional.put($ref, DynamicRefs.resolve(reference.mapValueType()));
+      additional.put($ref, refs.resolve(reference.mapValueType()));
       return new CustomPropertyDefinition(map);
     }
 
     var remotRef = context.getGeneratorConfig().createObjectNode();
-    remotRef.put($ref, DynamicRefs.resolve(reference.value()));
+    remotRef.put($ref, refs.resolve(reference.value()));
     return new CustomPropertyDefinition(remotRef);
   }
 

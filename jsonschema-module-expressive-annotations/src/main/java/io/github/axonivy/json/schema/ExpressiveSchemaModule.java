@@ -13,6 +13,7 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 
 import io.github.axonivy.json.schema.impl.ConditionalFieldProvider;
 import io.github.axonivy.json.schema.impl.ConfigNamingStrategy;
+import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
 
@@ -20,6 +21,7 @@ import io.github.axonivy.json.schema.impl.RemoteRefProvider;
 public class ExpressiveSchemaModule implements Module {
 
   private final Set<ExpressiveSchemaOption> options;
+  private final DynamicRefs refs = new DynamicRefs();
 
   public ExpressiveSchemaModule(ExpressiveSchemaOption... options) {
     this(Arrays.stream(options).collect(Collectors.toSet()));
@@ -29,12 +31,17 @@ public class ExpressiveSchemaModule implements Module {
     this.options = options;
   }
 
+  public ExpressiveSchemaModule property(String key, String value) {
+    refs.property(key, value);
+    return this;
+  }
+
   @Override
   public void applyToConfigBuilder(SchemaGeneratorConfigBuilder configBuilder) {
     configBuilder.forTypesInGeneral()
-      .withCustomDefinitionProvider(new ConditionalFieldProvider());
+      .withCustomDefinitionProvider(new ConditionalFieldProvider(refs));
     configBuilder.forFields()
-      .withCustomDefinitionProvider(new RemoteRefProvider())
+      .withCustomDefinitionProvider(new RemoteRefProvider(refs))
       .withCustomDefinitionProvider(new ExamplesProvider());
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {
@@ -64,4 +71,5 @@ public class ExpressiveSchemaModule implements Module {
     USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE,
     USE_SCHEMA_SUFFIX_NAMING_STRATEGY
   }
+
 }
