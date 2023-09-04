@@ -17,7 +17,7 @@ class TestFieldCondition {
 
   @Test
   void ifThenElse() {
-    ObjectNode schema = ExpressiveSchemaGenerator.generateSchema(MyConditionalField.class);
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyConditionalField.class);
 
     JsonNode ifConst = schema.get("if").get("properties").get("provider").get("const");
     assertThat(ifConst.asText())
@@ -35,7 +35,7 @@ class TestFieldCondition {
 
   @Test
   void multiple_ifThenElse() {
-    ObjectNode schema = ExpressiveSchemaGenerator.generateSchema(MyMultiConditionalField.class);
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyMultiConditionalField.class);
 
     var allOf = (ArrayNode) schema.get("allOf");
     List<JsonNode> conditions = new ArrayList<>();

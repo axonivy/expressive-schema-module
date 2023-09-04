@@ -12,7 +12,7 @@ class TestExampleValues {
 
   @Test
   void enrichedWithExamples() {
-    ObjectNode schema = ExpressiveSchemaGenerator.generateSchema(Examplified.class);
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(Examplified.class);
     assertThat(schema.toPrettyString()).contains("superFastProvider");
   }
 

@@ -13,7 +13,7 @@ class TestRemoteRef {
 
   @Test
   void remoteSibling() {
-    ObjectNode schema = ExpressiveSchemaGenerator.generateSchema(MySchema.class);
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MySchema.class);
     JsonNode sibling = schema.get("properties").get("sibling");
     assertThat(sibling.get("$ref").asText())
       .isEqualTo("/ivy/a-sibling.json");
@@ -26,8 +26,9 @@ class TestRemoteRef {
 
   @Test
   void ivyYamlSubVersioned() {
-    System.setProperty("config.version", "0.0.1");
-    ObjectNode schema = ExpressiveSchemaGenerator.generateSchema(MyIvySchema.class);
+    var generator = new ExpressiveSchemaGenerator();
+    generator.module.property("config.version", "0.0.7");
+    ObjectNode schema = generator.generateSchema(MyIvySchema.class);
     JsonNode sibling = schema.get("properties").get("sibling");
     assertThat(sibling.get("$ref").asText())
       .startsWith("/ivy/")

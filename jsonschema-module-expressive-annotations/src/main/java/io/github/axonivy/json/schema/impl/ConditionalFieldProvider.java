@@ -25,10 +25,16 @@ import io.github.axonivy.json.schema.annotations.Condition;
 
 public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
+  private DynamicRefs refs;
+
+  public ConditionalFieldProvider(DynamicRefs refs) {
+    this.refs = refs;
+  }
+
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType javaType, SchemaGenerationContext context) {
     ResolvedTypeWithMembers fully = context.getTypeContext().resolveWithMembers(javaType);
-    var builder = new ConditionBuilder(context);
+    var builder = new ConditionBuilder(context, refs);
     Arrays.stream(fully.getMemberFields())
       .forEach(fld -> annotate(builder, fld));
     return builder
@@ -54,13 +60,15 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
     private final SchemaVersion version;
     private final List<ObjectNode> conditions = new ArrayList<>();
+    private final DynamicRefs refs;
 
-    public ConditionBuilder(SchemaGenerationContext context) {
+    public ConditionBuilder(SchemaGenerationContext context, DynamicRefs refs) {
+      this.refs = refs;
       this.version = context.getGeneratorConfig().getSchemaVersion();
     }
 
     public ObjectNode addCondition(Condition condition, String field) {
-      var resovled = DynamicRefs.resolve(condition.thenRef());
+      var resovled = refs.resolve(condition.thenRef());
       var ref = JsonNodeFactory.instance.objectNode();
       ref.put(SchemaKeyword.TAG_REF.forVersion(version), resovled);
       return addCondition(field, condition.ifConst(), condition.thenProperty(), ref);
