@@ -25,7 +25,22 @@ class TestRemoteRef {
   }
 
   @Test
-  void ivyYamlSubVersioned() {
+  void dynamicRefs_sysProps() {
+    System.setProperty("config.version", "0.0.1");
+    try {
+      ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyIvySchema.class);
+      JsonNode sibling = schema.get("properties").get("sibling");
+      assertThat(sibling.get("$ref").asText())
+        .startsWith("/ivy/")
+        .doesNotContain("config.version")
+        .endsWith("/a-sibling.json");
+    } finally {
+      System.clearProperty("config.version");
+    }
+  }
+
+  @Test
+  void dynamicRefs_props() {
     var generator = new ExpressiveSchemaGenerator();
     generator.module.property("config.version", "0.0.7");
     ObjectNode schema = generator.generateSchema(MyIvySchema.class);
@@ -34,7 +49,6 @@ class TestRemoteRef {
       .startsWith("/ivy/")
       .doesNotContain("config.version")
       .endsWith("/a-sibling.json");
-
   }
 
   static class MyIvySchema {

@@ -2,6 +2,7 @@ package io.github.axonivy.json.schema.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,7 +23,7 @@ public class DynamicRefs {
     var replaced = new StringBuilder();
     while(matcher.find()) {
       String property = matcher.group(1);
-      String value = properties.get(property);
+      String value = get(property);
       if (value == null) {
         value = START+property+END;
       }
@@ -30,5 +31,10 @@ public class DynamicRefs {
     }
     matcher.appendTail(replaced);
     return replaced.toString();
+  }
+
+  private String get(String property) {
+    return Optional.ofNullable(properties.get(property))
+      .orElse(System.getProperty(property));
   }
 }
