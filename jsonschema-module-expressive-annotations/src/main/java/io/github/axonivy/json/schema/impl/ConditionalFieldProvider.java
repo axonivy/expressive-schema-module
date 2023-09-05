@@ -34,7 +34,7 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType javaType, SchemaGenerationContext context) {
     ResolvedTypeWithMembers fully = context.getTypeContext().resolveWithMembers(javaType);
-    var builder = new ConditionBuilder(context, refs);
+    var builder = new ConditionBuilder(context).refs(refs);
     Arrays.stream(fully.getMemberFields())
       .forEach(fld -> annotate(builder, fld));
     return builder
@@ -60,11 +60,15 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
     private final SchemaVersion version;
     private final List<ObjectNode> conditions = new ArrayList<>();
-    private final DynamicRefs refs;
+    private DynamicRefs refs = new DynamicRefs();
 
-    public ConditionBuilder(SchemaGenerationContext context, DynamicRefs refs) {
-      this.refs = refs;
+    public ConditionBuilder(SchemaGenerationContext context) {
       this.version = context.getGeneratorConfig().getSchemaVersion();
+    }
+
+    public ConditionBuilder refs(DynamicRefs resolver) {
+      this.refs = resolver;
+      return this;
     }
 
     public ObjectNode addCondition(Condition condition, String field) {
