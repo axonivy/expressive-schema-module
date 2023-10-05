@@ -13,6 +13,7 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 
 import io.github.axonivy.json.schema.impl.ConditionalFieldProvider;
 import io.github.axonivy.json.schema.impl.ConfigNamingStrategy;
+import io.github.axonivy.json.schema.impl.CustomTypeProvider;
 import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
@@ -42,7 +43,8 @@ public class ExpressiveSchemaModule implements Module {
       .withCustomDefinitionProvider(new ConditionalFieldProvider(refs));
     configBuilder.forFields()
       .withCustomDefinitionProvider(new RemoteRefProvider(refs))
-      .withCustomDefinitionProvider(new ExamplesProvider());
+      .withCustomDefinitionProvider(new ExamplesProvider())
+      .withCustomDefinitionProvider(new CustomTypeProvider());
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {
       configBuilder.forTypesInGeneral()

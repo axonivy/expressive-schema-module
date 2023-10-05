@@ -123,6 +123,26 @@ Produces therefore:
 "additionalProperties" : false
 ```
 
+### @CustomType
+
+Allows to patch a type definition, to represent it in another way within the schema.
+
+```java
+@CustomType(TestCustomType.Provider.class)
+public Object provider;
+```
+
+Generates:
+
+```json
+"properties" : {
+  "provider" : {
+    "$ref" : "#/$defs/Provider"
+  }
+}
+```
+
+
 ## Options
 
 The module comes with a few opt-in schema features. See the `ExpressiveSchemaOption` enumeration.
