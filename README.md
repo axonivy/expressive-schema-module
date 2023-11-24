@@ -29,7 +29,7 @@ Will generate a schema as follows:
 
 ### @RemoteRef
 
-Simplifies the inclusion ob other schemas, therefore enabling you to craft composite schemas.
+Simplifies the inclusion of other schemas, therefore enabling you to craft composite schemas.
 
 ```java
 @RemoteRef("/ivy/a-sibling.json")
