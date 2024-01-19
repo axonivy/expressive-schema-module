@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.github.axonivy.json.schema.annotations.AllImplementations;
-import io.github.axonivy.json.schema.annotations.AllImplementations.TypeReqistry;
+import io.github.axonivy.json.schema.annotations.Implementations;
+import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
 
 class TestImplementationTypes {
 
@@ -111,7 +111,7 @@ class TestImplementationTypes {
     public Generic provider;
   }
 
-  @AllImplementations(LocalFactory.class)
+  @Implementations(LocalFactory.class)
   public static interface Generic {
     String id();
   }

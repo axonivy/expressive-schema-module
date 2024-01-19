@@ -12,7 +12,7 @@ import java.util.Set;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AllImplementations {
+public @interface Implementations {
 
   /** the property that will define the implementing type of this generic object */
   public String type() default "type";
@@ -33,6 +33,13 @@ public @interface AllImplementations {
 
     default String typeName(Class<?> type) {
       return type.getSimpleName();
+    }
+
+    /**
+     * if provided with a non-null value; the 'type' property will be crafted as 'anyOf', adding 'description's to the constants.
+     */
+    default String typeDesc(@SuppressWarnings("unused") Class<?> type) {
+      return null;
     }
 
   }

@@ -88,12 +88,12 @@ public String provider;
 
 
 
-### @AllImplementations
+### @Implementations
 
 Adds implementations of a generic type into the schema. It will use a virtual type and value properties in order to provide strict schema support, despite the generic class design.
 
 ```java
-@AllImplementations(ComponentTypes)
+@Implementations(ComponentTypes)
 public Component component;
 
 

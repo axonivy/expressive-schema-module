@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
 
-class TestImplementationTypesNaming {
+class TestImplementationTypesDesc {
 
   ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyRootType.class);
   JsonNode defs = schema.get("$defs");
@@ -24,26 +24,16 @@ class TestImplementationTypesNaming {
   void subTypes_customIdentifier() {
     System.out.println(schema.toPrettyString());
     var props = defs.get(Generic.class.getSimpleName()).get("properties");
-    var types = props.get("type").get("enum");
+    var types = props.get("type").get("anyOf");
     assertThat(types).isInstanceOf(ArrayNode.class);
 
     assertThat(nodesOf(types))
-      .extracting(JsonNode::asText)
-      .containsOnly(
-        "another-custom",
-        "specific-custom"
-      );
-  }
-
-  @Test
-  void subTypes_allOfCondition() {
-    var generic = defs.get(Generic.class.getSimpleName());
-    var allOf = generic.get("allOf");
-    assertThat(nodesOf(allOf))
-      .extracting(n -> n.get("if").get("properties").get("type").get("const").asText())
-      .containsOnly(
-        "another-custom",
-        "specific-custom"
+      .extracting(JsonNode::toPrettyString)
+      .contains("""
+        {
+          "const" : "Specific",
+          "description" : "verbose Specific"
+        }"""
       );
   }
 
@@ -86,8 +76,8 @@ class TestImplementationTypesNaming {
     }
 
     @Override
-    public String typeName(Class<?> type) {
-      return type.getSimpleName().toLowerCase()+"-custom";
+    public String typeDesc(Class<?> type) {
+      return "verbose "+type.getSimpleName();
     }
   }
 
