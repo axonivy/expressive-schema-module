@@ -16,6 +16,7 @@ import io.github.axonivy.json.schema.impl.ConfigNamingStrategy;
 import io.github.axonivy.json.schema.impl.CustomTypeProvider;
 import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
+import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
 
 
@@ -40,7 +41,8 @@ public class ExpressiveSchemaModule implements Module {
   @Override
   public void applyToConfigBuilder(SchemaGeneratorConfigBuilder configBuilder) {
     configBuilder.forTypesInGeneral()
-      .withCustomDefinitionProvider(new ConditionalFieldProvider(refs));
+      .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
+      .withCustomDefinitionProvider(new ImplementationTypesProvider());
     configBuilder.forFields()
       .withCustomDefinitionProvider(new RemoteRefProvider(refs))
       .withCustomDefinitionProvider(new ExamplesProvider())
