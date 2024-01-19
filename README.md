@@ -18,6 +18,7 @@ public String provider;
 ```
 
 Will generate a schema as follows:
+
 ```json
 "properties" : {
   "provider" : {
@@ -37,12 +38,12 @@ public Object sibling;
 ```
 
 Will generate a schema as follows:
+
 ```json
 "sibling" : {
   "$ref" : "/ivy/a-sibling.json"
 }
 ```
-
 
 ### @Condition
 
@@ -54,6 +55,7 @@ public String provider;
 ```
 
 Will generate a schema as follows:
+
 ```json
 "properties" : {
   "provider" : {
@@ -83,6 +85,62 @@ Note that multiple conditions can be combined by using many instances of `@Condi
 @Condition(ifConst  = "ms-ad", thenProperty = "config", thenRef = "/ivy/ldap-config.json")
 public String provider;
 ```
+
+
+
+### @AllImplementations
+
+Adds implementations of a generic type into the schema. It will use a virtual type and value properties in order to provide strict schema support, despite the generic class design.
+
+```java
+@AllImplementations(ComponentTypes)
+public Component component;
+
+
+public static class ComponentTypes implements TypeReqistry {
+  @Override
+  public Set<Class<?>> types() {
+    return Set.of(Specific.class, Another.class);
+  }
+}
+```
+
+Will generate a schema as follows:
+
+```json
+"Component" : {
+  "type" : "object",
+  "properties" : {
+    "type" : {
+      "type" : "string",
+      "enum" : [ "Another", "Specific" ]
+    },
+    "config" : {
+      "type" : "object"
+    }
+  },
+  "additionalProperties" : false,
+  "allOf" : [ {
+    "if" : {
+      "properties" : {
+        "type" : {
+          "const" : "Specific"
+        }
+      }
+    },
+    "then" : {
+      "properties" : {
+        "config" : {
+          "$ref" : "#/$defs/Specific"
+        }
+      }
+    }
+  },
+  ...
+}
+```
+
+
 
 ### @AdditionalProperties
 
@@ -142,7 +200,6 @@ Generates:
 }
 ```
 
-
 ## Options
 
 The module comes with a few opt-in schema features. See the `ExpressiveSchemaOption` enumeration.
@@ -154,9 +211,9 @@ The module comes with a few opt-in schema features. See the `ExpressiveSchemaOpt
 ### Examples
 
 Enable all options programatically:
+
 ```java
 var configBuilder = new SchemaGeneratorConfigBuilder(VERSION, OptionPreset.PLAIN_JSON);
 configBuilder.with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 configBuilder.with(new ExpressiveSchemaModule(EnumSet.allOf(ExpressiveSchemaOption.class)));
 ```
-
