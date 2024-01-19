@@ -24,8 +24,17 @@ public @interface AllImplementations {
   public Class<? extends TypeReqistry> value();
 
   public static interface TypeReqistry {
+
     Set<Class<?>> types();
-    default Class<?> base(){ return null; }
+
+    default Class<?> base() {
+      return null; // no common properties on impls
+    }
+
+    default String typeName(Class<?> type) {
+      return type.getSimpleName();
+    }
+
   }
 
 }
