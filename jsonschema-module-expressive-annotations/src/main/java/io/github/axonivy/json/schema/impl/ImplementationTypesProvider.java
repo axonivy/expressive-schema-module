@@ -9,6 +9,7 @@ import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,12 @@ import io.github.axonivy.json.schema.impl.ConditionalFieldProvider.ConditionBuil
  */
 public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
+  private final boolean conditional;
+
+  public ImplementationTypesProvider(boolean conditional) {
+    this.conditional = conditional;
+  }
+
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType type, SchemaGenerationContext context) {
     var impls = type.getErasedType().getAnnotation(Implementations.class);
@@ -46,8 +53,14 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
     var props = propertiesOf(context, std);
     props.set(impls.type(), craftTypeConsts(context, registry));
-    props.putObject(impls.container()).put("type", "object"); //vs-code needs a generic block for validation
 
+    var container = props.putObject(impls.container());
+    if (!conditional) {
+      container.setAll(craftAnyOf(context, registry.types()));
+      return new CustomDefinition(std, false);
+    }
+
+    container.put("type", "object"); //vs-code needs a generic block for validation
     return conditional(context, impls, registry)
       .toDefinition(()->std)
       .map(node -> new CustomDefinition(node, false))
@@ -119,6 +132,16 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
       }
     });
     return consts;
+  }
+
+  public static ObjectNode craftAnyOf(SchemaGenerationContext context, Set<Class<?>> subTypes) {
+    ObjectNode typeDef = context.getGeneratorConfig().createObjectNode();
+    var version = context.getGeneratorConfig().getSchemaVersion();
+    var anyOf = typeDef.putArray(TAG_ANYOF.forVersion(version));
+    subTypes.stream()
+      .map(nodeType -> context.createDefinitionReference(context.getTypeContext().resolve(nodeType)))
+      .forEachOrdered(anyOf::add);
+    return typeDef;
   }
 
 }
