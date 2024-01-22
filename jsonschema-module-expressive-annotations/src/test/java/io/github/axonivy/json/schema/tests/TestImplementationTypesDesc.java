@@ -24,9 +24,15 @@ class TestImplementationTypesDesc {
   void subTypes_customIdentifier() {
     System.out.println(schema.toPrettyString());
     var props = defs.get(Generic.class.getSimpleName()).get("properties");
-    var types = props.get("type").get("anyOf");
-    assertThat(types).isInstanceOf(ArrayNode.class);
+    var type = props.get("type");
+    assertThat(type.get("type").asText())
+      .as("native string property nature is declared")
+      .isEqualTo("string");
 
+    var types = type.get("anyOf");
+    assertThat(types)
+      .as("any of enriches the string with valid const's and its description")
+      .isInstanceOf(ArrayNode.class);
     assertThat(nodesOf(types))
       .extracting(JsonNode::toPrettyString)
       .contains("""
