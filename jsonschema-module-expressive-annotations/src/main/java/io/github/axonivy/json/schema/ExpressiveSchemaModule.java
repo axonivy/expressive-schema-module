@@ -41,8 +41,7 @@ public class ExpressiveSchemaModule implements Module {
   @Override
   public void applyToConfigBuilder(SchemaGeneratorConfigBuilder configBuilder) {
     configBuilder.forTypesInGeneral()
-      .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
-      .withCustomDefinitionProvider(new ImplementationTypesProvider());
+      .withCustomDefinitionProvider(new ConditionalFieldProvider(refs));
     configBuilder.forFields()
       .withCustomDefinitionProvider(new RemoteRefProvider(refs))
       .withCustomDefinitionProvider(new ExamplesProvider())
@@ -60,6 +59,13 @@ public class ExpressiveSchemaModule implements Module {
       configBuilder.forTypesInGeneral()
         .withDefinitionNamingStrategy(new ConfigNamingStrategy());
     }
+    applyImplementations(configBuilder);
+  }
+
+  private void applyImplementations(SchemaGeneratorConfigBuilder configBuilder) {
+    boolean conditionals = options.contains(ExpressiveSchemaOption.PREFER_CONDITIONAL_SUBTYPES);
+    configBuilder.forTypesInGeneral()
+      .withCustomDefinitionProvider(new ImplementationTypesProvider(conditionals));
   }
 
   private static Object jacksonDefaultVal(FieldScope field) {
@@ -73,7 +79,8 @@ public class ExpressiveSchemaModule implements Module {
   public static enum ExpressiveSchemaOption {
     USE_ADDITIONAL_PROPERTIES_ANNOTATION,
     USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE,
-    USE_SCHEMA_SUFFIX_NAMING_STRATEGY
+    USE_SCHEMA_SUFFIX_NAMING_STRATEGY,
+    PREFER_CONDITIONAL_SUBTYPES
   }
 
 }

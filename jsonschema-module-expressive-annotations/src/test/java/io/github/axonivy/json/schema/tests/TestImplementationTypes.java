@@ -3,6 +3,7 @@ package io.github.axonivy.json.schema.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
 
@@ -93,6 +95,22 @@ class TestImplementationTypes {
             }
           }
         }""");
+  }
+
+  @Test
+  void subTypes_anyOf_unconditional() {
+    var unconditional = new ExpressiveSchemaGenerator(EnumSet.noneOf(ExpressiveSchemaOption.class)).generateSchema(MyRootType.class);
+    System.out.println(unconditional.toPrettyString());
+
+    var generic = unconditional.get("$defs").get(Generic.class.getSimpleName());
+    var subTypes = generic.get("properties").get("config");
+    assertThat(namesOf(subTypes))
+      .as("generic anyOf refs are better supported on some schema consumers: e.g json-schema-to-typescript generator")
+      .containsOnly("anyOf");
+    var anyOf = subTypes.get("anyOf");
+    assertThat(nodesOf(anyOf))
+      .extracting(n -> n.get("$ref").asText())
+      .contains("#/$defs/Specific");
   }
 
   private static List<String> namesOf(JsonNode defs) {

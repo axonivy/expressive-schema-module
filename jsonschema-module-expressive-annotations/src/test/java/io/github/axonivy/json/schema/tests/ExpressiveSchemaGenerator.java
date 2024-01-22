@@ -23,7 +23,11 @@ public class ExpressiveSchemaGenerator {
   }
 
   public ExpressiveSchemaGenerator() {
-    this.module = new ExpressiveSchemaModule(EnumSet.allOf(ExpressiveSchemaOption.class));
+    this(EnumSet.allOf(ExpressiveSchemaOption.class));
+  }
+
+  public ExpressiveSchemaGenerator(EnumSet<ExpressiveSchemaOption> options) {
+    this.module = new ExpressiveSchemaModule(options);
     var config = configBuilder().with(module).build();
     this.generator = new SchemaGenerator(config);
   }
