@@ -1,6 +1,8 @@
 package io.github.axonivy.json.schema.impl;
 
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_ANYOF;
+import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_CONST;
+import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_DESCRIPTION;
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_ENUM;
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_TYPE;
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_TYPE_STRING;
@@ -123,12 +125,13 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   public static ObjectNode enumerateValidIds(SchemaGenerationContext context, Map<String, String> described) {
     var version = context.getGeneratorConfig().getSchemaVersion();
     var consts = context.getGeneratorConfig().createObjectNode();
+    consts.put(TAG_TYPE.forVersion(version), TAG_TYPE_STRING.forVersion(version));
     var anyOf = consts.putArray(TAG_ANYOF.forVersion(version));
     described.entrySet().stream().forEach(et -> {
       ObjectNode impl = anyOf.addObject();
-      impl.put("const", et.getKey());
+      impl.put(TAG_CONST.forVersion(version), et.getKey());
       if (!et.getValue().isBlank()) {
-        impl.put("description", et.getValue());
+        impl.put(TAG_DESCRIPTION.forVersion(version), et.getValue());
       }
     });
     return consts;
