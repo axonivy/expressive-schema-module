@@ -64,7 +64,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   }
 
   private static ConditionBuilder conditional(SchemaGenerationContext context, Implementations impls, TypeReqistry registry) {
-    var builder = new io.github.axonivy.json.schema.impl.ConditionalFieldProvider.ConditionBuilder(context);
+    var builder = new ConditionBuilder(context);
     for(Class<?> subType : registry.types()) {
       var resolved = context.getTypeContext().resolve(subType);
       ObjectNode reference = context.createDefinitionReference(resolved);
@@ -78,7 +78,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
       Constructor<?> constructor = registryType.getConstructors()[0];
       return (TypeReqistry) constructor.newInstance();
     } catch (Exception ex) {
-      throw new RuntimeException("Failed to create type registry", ex);
+      throw new RuntimeException("Failed to create type registry: "+registryType+". Does it have a public zero-arg constructor?", ex);
     }
   }
 
