@@ -40,7 +40,10 @@ class TestImplementationTypes {
     var propNames = namesOf(props);
     assertThat(propNames)
       .as("virtual properties injected by using the AllImplementations annotation")
-      .contains("type", "config");
+      .contains("type");
+    assertThat(propNames)
+      .as("config is not statically available; it's conditionally available based on the 'type'")
+      .doesNotContain("config");
     assertThat(propNames)
       .as("enriched with properties from a 'base' type")
       .contains("common");
