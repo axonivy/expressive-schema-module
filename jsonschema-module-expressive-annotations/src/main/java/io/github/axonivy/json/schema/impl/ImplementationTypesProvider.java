@@ -56,12 +56,13 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     var props = propertiesOf(context, std);
     props.set(impls.type(), craftTypeConsts(context, registry));
 
+    var container = props.putObject(impls.container());
     if (!conditional) {
-      var container = props.putObject(impls.container());
       container.setAll(craftAnyOf(context, registry.types()));
       return new CustomDefinition(std, false);
     }
 
+    container.put("type", "object"); //vs-code needs a generic block for validation
     return conditional(context, impls, registry)
       .toDefinition(()->std)
       .map(node -> new CustomDefinition(node, false))
