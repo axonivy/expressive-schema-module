@@ -46,7 +46,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType type, SchemaGenerationContext context) {
-    var impls = type.getErasedType().getAnnotation(Implementations.class);
+    var impls = type.getErasedType().getDeclaredAnnotation(Implementations.class);
     if (impls != null) {
       return supplyVirtualContainer(type, context, impls);
     }
@@ -58,6 +58,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   }
 
   private CustomDefinition implementation(ResolvedType type, SchemaGenerationContext context, List<String> baseCommon) {
+    common.remove(type.getErasedType());
     var std = context.createStandardDefinition(type, this);
     if (std.get(context.getKeyword(SchemaKeyword.TAG_PROPERTIES)) instanceof ObjectNode props) {
       props.remove(baseCommon);
@@ -107,11 +108,11 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     return std.putObject(propertiesTag);
   }
 
-  private static ConditionBuilder conditional(SchemaGenerationContext context, Implementations impls, TypeReqistry registry) {
+  private ConditionBuilder conditional(SchemaGenerationContext context, Implementations impls, TypeReqistry registry) {
     var builder = new ConditionBuilder(context);
     for(Class<?> subType : registry.types()) {
       var resolved = context.getTypeContext().resolve(subType);
-      ObjectNode reference = context.createDefinitionReference(resolved);
+      ObjectNode reference = context.createStandardDefinitionReference(resolved, null);
       builder.addCondition(impls.type(), registry.typeName(subType), impls.container(), reference);
     }
     return builder;
