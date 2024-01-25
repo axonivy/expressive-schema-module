@@ -8,7 +8,10 @@ import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_TYPE;
 import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_TYPE_STRING;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +38,7 @@ import io.github.axonivy.json.schema.impl.ConditionalFieldProvider.ConditionBuil
 public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
   private final boolean conditional;
+  private final Map<Class<?>, List<String>> common = new HashMap<>();
 
   public ImplementationTypesProvider(boolean conditional) {
     this.conditional = conditional;
@@ -43,22 +47,39 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType type, SchemaGenerationContext context) {
     var impls = type.getErasedType().getAnnotation(Implementations.class);
-    if (impls == null) {
-      return null;
+    if (impls != null) {
+      return supplyVirtualContainer(type, context, impls);
     }
+    var base = Optional.ofNullable(common.get(type.getErasedType()));
+    if (base.isPresent()) {
+      return implementation(type, context, base.get());
+    }
+    return null;
+  }
 
+  private CustomDefinition implementation(ResolvedType type, SchemaGenerationContext context, List<String> baseCommon) {
+    var std = context.createStandardDefinition(type, this);
+    if (std.get(context.getKeyword(SchemaKeyword.TAG_PROPERTIES)) instanceof ObjectNode props) {
+      props.remove(baseCommon);
+    }
+    return new CustomDefinition(std);
+  }
+
+  private CustomDefinition supplyVirtualContainer(ResolvedType type, SchemaGenerationContext context, Implementations impls) {
     TypeReqistry registry = create(impls.value());
     var base = Optional.ofNullable(registry.base())
       .map(context.getTypeContext()::resolve)
       .orElse(type);
     ObjectNode std = context.createStandardDefinition(base, this);
 
+    Set<Class<?>> subTypes = registry.types();
     var props = propertiesOf(context, std);
+    storeCommonProps(subTypes, props);
     props.set(impls.type(), craftTypeConsts(context, registry));
 
     var container = props.putObject(impls.container());
     if (!conditional) {
-      container.setAll(craftAnyOf(context, registry.types()));
+      container.setAll(craftAnyOf(context, subTypes));
       return new CustomDefinition(std, false);
     }
 
@@ -67,6 +88,14 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
       .toDefinition(()->std)
       .map(node -> new CustomDefinition(node, false))
       .orElse(null);
+  }
+
+  private void storeCommonProps(Set<Class<?>> subTypes, ObjectNode props) {
+    if (!props.isEmpty()) {
+      List<String> names = new ArrayList<String>();
+      props.fieldNames().forEachRemaining(names::add);
+      subTypes.forEach(sub -> common.put(sub, names));
+    }
   }
 
   private static ObjectNode propertiesOf(SchemaGenerationContext context, ObjectNode std) {

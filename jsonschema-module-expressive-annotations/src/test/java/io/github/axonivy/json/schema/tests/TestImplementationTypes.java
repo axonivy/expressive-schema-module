@@ -41,9 +41,6 @@ class TestImplementationTypes {
     assertThat(propNames)
       .as("virtual properties injected by using the AllImplementations annotation")
       .contains("type", "config");
-    assertThat(propNames)
-      .as("enriched with properties from a 'base' type")
-      .contains("common");
 
     var types = props.get("type").get("enum");
     assertThat(types).isInstanceOf(ArrayNode.class);
@@ -56,6 +53,20 @@ class TestImplementationTypes {
         Another.class.getSimpleName(),
         Specific.class.getSimpleName()
       );
+  }
+
+  @Test
+  void subTypes_baseProps() {
+    var genericProps = defs.get(Generic.class.getSimpleName()).get("properties");
+    assertThat(namesOf(genericProps))
+      .as("enriched with properties from a 'base' type")
+      .contains("common");
+
+    var specificProps = defs.get(Specific.class.getSimpleName()).get("properties");
+    assertThat(namesOf(specificProps))
+      .as("does not restate common 'base' properties")
+      .doesNotContain("common")
+      .contains("customName");
   }
 
   @Test
