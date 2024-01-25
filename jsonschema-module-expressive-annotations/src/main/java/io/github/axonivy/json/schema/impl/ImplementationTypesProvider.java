@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +41,8 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   private final boolean conditional;
   private final Map<Class<?>, List<String>> common = new HashMap<>();
 
+  private final Set<ResolvedType> supplying = new HashSet<>();
+
   public ImplementationTypesProvider(boolean conditional) {
     this.conditional = conditional;
   }
@@ -48,6 +51,10 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType type, SchemaGenerationContext context) {
     var impls = type.getErasedType().getDeclaredAnnotation(Implementations.class);
     if (impls != null) {
+      if (supplying.contains(type)) {
+        return null;
+      }
+      supplying.add(type);
       return supplyVirtualContainer(type, context, impls);
     }
     var base = Optional.ofNullable(common.get(type.getErasedType()));
@@ -58,7 +65,6 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
   }
 
   private CustomDefinition implementation(ResolvedType type, SchemaGenerationContext context, List<String> baseCommon) {
-    common.remove(type.getErasedType());
     var std = context.createStandardDefinition(type, this);
     if (std.get(context.getKeyword(SchemaKeyword.TAG_PROPERTIES)) instanceof ObjectNode props) {
       props.remove(baseCommon);

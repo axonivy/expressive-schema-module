@@ -154,18 +154,22 @@ class TestImplementationTypes {
     public String common;
   }
 
-  public static class Specific extends Base {
+  public static class Specific extends Base implements Generic {
     public String customName;
   }
 
-  public static class Another extends Base {
+  public static class Another extends Base implements Generic {
     public int version;
+  }
+
+  public static class Container extends Base implements Generic {
+    public Generic child;
   }
 
   public static class LocalFactory implements TypeReqistry {
     @Override
     public Set<Class<?>> types() {
-      return Set.of(Specific.class, Another.class);
+      return Set.of(Specific.class, Another.class, Container.class);
     }
 
     @Override
