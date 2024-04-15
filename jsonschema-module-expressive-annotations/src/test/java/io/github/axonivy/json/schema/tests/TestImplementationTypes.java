@@ -77,8 +77,9 @@ class TestImplementationTypes {
 
     assertThat(nodesOf(types))
       .extracting(JsonNode::asText)
-      .contains(
+      .containsExactly(
         Another.class.getSimpleName(),
+        Container.class.getSimpleName(),
         Specific.class.getSimpleName()
       );
   }
@@ -86,8 +87,8 @@ class TestImplementationTypes {
   @Test
   void subTypes_allOfCondition() {
     var generic = defs.get(Generic.class.getSimpleName());
-    var allOf = generic.get("allOf");
-    assertThat(nodesOf(allOf))
+    var allOf = nodesOf(generic.get("allOf"));
+    assertThat(allOf)
       .extracting(JsonNode::toPrettyString)
       .contains("""
         {
@@ -106,6 +107,9 @@ class TestImplementationTypes {
             }
           }
         }""");
+    assertThat(allOf).extracting(n -> n.get("if").get("properties").get("type").get("const").asText())
+      .as("alphabetical order for constant generator results")
+      .containsExactly("Another", "Container", "Specific");
   }
 
   @Test
@@ -121,7 +125,11 @@ class TestImplementationTypes {
     var anyOf = subTypes.get("anyOf");
     assertThat(nodesOf(anyOf))
       .extracting(n -> n.get("$ref").asText())
-      .contains("#/$defs/Specific");
+      .containsExactly(
+        "#/$defs/Another",
+        "#/$defs/Container",
+        "#/$defs/Specific"
+      );
   }
 
   private static List<String> namesOf(JsonNode defs) {
