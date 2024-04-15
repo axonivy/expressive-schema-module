@@ -10,6 +10,7 @@ import static com.github.victools.jsonschema.generator.SchemaKeyword.TAG_TYPE_ST
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import io.github.axonivy.json.schema.impl.ConditionalFieldProvider.ConditionBuil
  */
 public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
+  private static Comparator<Class<?>> SIMPLE_NAME_SORTED = (c1,c2) -> c1.getSimpleName().compareToIgnoreCase(c2.getSimpleName());
   private final boolean conditional;
   private final Map<Class<?>, List<String>> common = new HashMap<>();
 
@@ -116,11 +118,13 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
   private ConditionBuilder conditional(SchemaGenerationContext context, Implementations impls, TypeReqistry registry) {
     var builder = new ConditionBuilder(context);
-    for(Class<?> subType : registry.types()) {
-      var resolved = context.getTypeContext().resolve(subType);
-      ObjectNode reference = context.createStandardDefinitionReference(resolved, null);
-      builder.addCondition(impls.type(), registry.typeName(subType), impls.container(), reference);
-    }
+    registry.types().stream()
+      .sorted(SIMPLE_NAME_SORTED)
+      .forEachOrdered(subType ->  {
+        var resolved = context.getTypeContext().resolve(subType);
+        ObjectNode reference = context.createStandardDefinitionReference(resolved, null);
+        builder.addCondition(impls.type(), registry.typeName(subType), impls.container(), reference);
+    });
     return builder;
   }
 
@@ -178,6 +182,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     var version = context.getGeneratorConfig().getSchemaVersion();
     var anyOf = typeDef.putArray(TAG_ANYOF.forVersion(version));
     subTypes.stream()
+      .sorted(SIMPLE_NAME_SORTED)
       .map(nodeType -> context.createDefinitionReference(context.getTypeContext().resolve(nodeType)))
       .forEachOrdered(anyOf::add);
     return typeDef;
