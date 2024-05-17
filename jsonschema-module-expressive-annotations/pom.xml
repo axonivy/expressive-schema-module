@@ -29,13 +29,13 @@
   <developers>
     <developer>
       <name>Reguël Wermelinger</name>
-      <email>r.wermelinger@gmail.com</email>
+      <email>reguel.wermelinger@axonivy.com</email>
       <organizationUrl>https://github.com/axonivy</organizationUrl>
     </developer>
   </developers>
 
   <properties>
-    <java.module.name>ch.monokellabs.json.schema.module.expressive.annotations</java.module.name>
+    <java.module.name>com.axonivy.json.schema.module.expressive.annotations</java.module.name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
     <victools.version>4.35.0</victools.version>
