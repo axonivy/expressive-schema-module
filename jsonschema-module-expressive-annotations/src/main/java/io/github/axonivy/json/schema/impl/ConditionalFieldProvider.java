@@ -79,14 +79,39 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     }
 
     public ObjectNode addCondition(String field, String expect, String thenProp, JsonNode thenRef) {
+      return addCondition(field, new String[] {expect}, thenProp, thenRef);
+    }
+
+    public ObjectNode addCondition(String field, String[] expect, String thenProp, JsonNode thenRef) {
       var target = JsonNodeFactory.instance.objectNode();
-      target.putObject("if").putObject("properties")
-        .putObject(field)
-        .put("const", expect);
-      target.putObject("then").putObject("properties")
-        .set(thenProp, thenRef);
+      ifProperty(field, expect, target);
+      thenProperty(thenProp, thenRef, target);
       conditions.add(target);
       return target;
+    }
+
+    private void ifProperty(String field, String[] expect, ObjectNode target) {
+      var ifProperty = target
+        .putObject(SchemaKeyword.TAG_IF.forVersion(version))
+        .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
+        .putObject(field);
+
+      String constTag = SchemaKeyword.TAG_CONST.forVersion(version);
+      if (expect.length == 1) {
+        ifProperty.put(constTag, expect[0]);
+        return;
+      }
+      var anyOf = ifProperty.putArray(SchemaKeyword.TAG_ANYOF.forVersion(version));
+      for(String exp : expect) {
+        anyOf.addObject().put(constTag, exp);
+      }
+    }
+
+    private void thenProperty(String thenProp, JsonNode thenRef, ObjectNode target) {
+      target
+        .putObject(SchemaKeyword.TAG_THEN.forVersion(version))
+        .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
+        .set(thenProp, thenRef);
     }
 
     public Optional<ObjectNode> toDefinition(Supplier<ObjectNode> std) {

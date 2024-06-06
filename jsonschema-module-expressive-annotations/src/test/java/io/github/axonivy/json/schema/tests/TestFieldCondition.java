@@ -58,4 +58,35 @@ class TestFieldCondition {
     public String provider;
   }
 
+  @Test
+  void multiple_constsToVerfiy() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyAnyOfConditionalField.class);
+    System.out.println(schema.toPrettyString());
+
+    JsonNode provider = schema.get("if").get("properties").get("provider");
+    var anyOf = provider.get("anyOf");
+    assertThat(anyOf).isInstanceOf(ArrayNode.class).hasSize(2);
+
+    JsonNode ifConst = anyOf.get(0).get("const");
+    assertThat(ifConst.asText())
+      .isEqualTo("ms-ad");
+
+    var then = schema.get("then").get("properties").get("config").get("$ref");
+    assertThat(then.asText())
+      .isEqualTo("#/$defs/ComplexType");
+  }
+
+  static class MyAnyOfConditionalField {
+    public String $schema; // self-ref
+
+    @Condition(ifConst  = { "ms-ad", "azure-idp" }, thenProperty = "config", thenRef = "#/$defs/ComplexType")
+    public String provider;
+
+    public ComplexType always;
+
+    public static class ComplexType {
+      public String name;
+    }
+  }
+
 }
