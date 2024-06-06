@@ -21,7 +21,7 @@ public @interface Condition {
   /**
    * @return the 'value' to assert on the field, which will return the optional property if matching.
    */
-  public String ifConst();
+  public String[] ifConst();
 
   /**
    * @return the 'name' of a property to be inserted, if the condition is met
