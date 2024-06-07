@@ -22,6 +22,7 @@ import com.github.victools.jsonschema.generator.SchemaKeyword;
 import com.github.victools.jsonschema.generator.SchemaVersion;
 
 import io.github.axonivy.json.schema.annotations.Condition;
+import io.github.axonivy.json.schema.annotations.Conditional;
 
 public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
@@ -44,15 +45,26 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
   }
 
   private void annotate(ConditionBuilder builder, ResolvedField field) {
-    Consumer<Condition> add = condition -> builder.addCondition(condition, field.getName());
     Annotations annotations = field.getAnnotations();
-    Condition single = field.get(Condition.class);
-    if (single != null) {
-      add.accept(single);
+
+    Consumer<Condition> add = condition -> builder.addCondition(condition, field.getName());
+    Condition condition = field.get(Condition.class);
+    if (condition != null) {
+      add.accept(condition);
     }
     Condition.List conditions = annotations.get(Condition.List.class);
     if (conditions != null) {
       Arrays.stream(conditions.value()).forEachOrdered(add);
+    }
+
+    Consumer<Conditional> addConditional = c -> builder.addConditional(c, field);
+    Conditional conditional = field.get(Conditional.class);
+    if (conditional != null) {
+      addConditional.accept(conditional);
+    }
+    Conditional.List conditionals = annotations.get(Conditional.List.class);
+    if (conditionals != null) {
+      Arrays.stream(conditionals.value()).forEachOrdered(addConditional);
     }
   }
 
@@ -61,9 +73,11 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     private final SchemaVersion version;
     private final List<ObjectNode> conditions = new ArrayList<>();
     private DynamicRefs refs = new DynamicRefs();
+    private SchemaGenerationContext context;
 
     public ConditionBuilder(SchemaGenerationContext context) {
       this.version = context.getGeneratorConfig().getSchemaVersion();
+      this.context = context;
     }
 
     public ConditionBuilder refs(DynamicRefs resolver) {
@@ -76,6 +90,11 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
       var ref = JsonNodeFactory.instance.objectNode();
       ref.put(SchemaKeyword.TAG_REF.forVersion(version), resovled);
       return addCondition(field, condition.ifConst(), condition.thenProperty(), ref);
+    }
+
+    public ObjectNode addConditional(Conditional condition, ResolvedField field) {
+      var resolved = context.createStandardDefinitionReference(field.getType(), null);
+      return addCondition(condition.ifProperty(), condition.hasConst(), field.getName(), resolved);
     }
 
     public ObjectNode addCondition(String field, String expect, String thenProp, JsonNode thenRef) {
