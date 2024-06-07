@@ -132,6 +132,28 @@ class TestImplementationTypes {
       );
   }
 
+  static class MyRootTypeNoContainer {
+    public GenericNoContainer provider;
+  }
+
+  @Implementations(value = LocalFactory.class, container = "")
+  public static interface GenericNoContainer {
+    String idX();
+  }
+
+  @Test
+  void types_withoutContainer() {
+    var unconditional = new ExpressiveSchemaGenerator().generateSchema(MyRootTypeNoContainer.class);
+    System.out.println(unconditional.toPrettyString());
+
+    var generic = unconditional.get("$defs").get(GenericNoContainer.class.getSimpleName());
+    var props = generic.get("properties");
+    assertThat(namesOf(props))
+      .as("empty 'container' name omits its declaration: this allows custom property rules to reflect children")
+      .doesNotContain("config", "");
+  }
+
+
   private static List<String> namesOf(JsonNode defs) {
     var names = new ArrayList<String>();
     defs.fieldNames().forEachRemaining(names::add);

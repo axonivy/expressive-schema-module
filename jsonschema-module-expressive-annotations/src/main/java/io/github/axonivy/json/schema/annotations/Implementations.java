@@ -17,7 +17,10 @@ public @interface Implementations {
   /** the property that will define the implementing type of this generic object */
   public String type() default "type";
 
-  /** the property that will hold the implementation specific properties */
+  /**
+   * Name of the property that will hold the implementation specific properties.
+   * Use an empty string to flag, that you don't need a container for sub-types.
+   */
   public String container() default "config";
 
   /** the provider of at least all valid-subtypes */

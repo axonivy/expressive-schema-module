@@ -86,13 +86,19 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     storeCommonProps(subTypes, props);
     props.set(impls.type(), craftTypeConsts(context, registry));
 
-    var container = props.putObject(impls.container());
-    if (!conditional) {
-      container.setAll(craftAnyOf(context, subTypes));
-      return new CustomDefinition(std, false);
+    String containerName = impls.container();
+    if (!containerName.isBlank()) {
+      var container = props.putObject(containerName);
+      if (conditional) {
+        container.put("type", "object"); //vs-code needs a generic block for validation
+      } else {
+        container.setAll(craftAnyOf(context, subTypes));
+      }
     }
 
-    container.put("type", "object"); //vs-code needs a generic block for validation
+    if (!conditional) {
+      return new CustomDefinition(std, false);
+    }
     return conditional(context, impls, registry)
       .toDefinition(()->std)
       .map(node -> new CustomDefinition(node, false))
