@@ -154,7 +154,7 @@ class TestImplementationTypes {
   }
 
 
-  private static List<String> namesOf(JsonNode defs) {
+  static List<String> namesOf(JsonNode defs) {
     var names = new ArrayList<String>();
     defs.fieldNames().forEachRemaining(names::add);
     return names;

@@ -1,5 +1,6 @@
 package io.github.axonivy.json.schema.tests;
 
+import static io.github.axonivy.json.schema.tests.TestImplementationTypes.namesOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -93,11 +94,15 @@ class TestFieldCondition {
   void conditionalOtherProp() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyConditionalFieldSibling.class);
 
+    assertThat(namesOf(schema.get("properties")))
+      .as("conditional fields are not listed as classic 'properties'")
+      .containsOnly("$schema", "provider");
+
     JsonNode ifProvider = schema.get("if").get("properties").get("provider");
     assertThat(ifProvider.get("const").asText())
       .isEqualTo("azure");
 
-    JsonNode thenProperty = schema.get("then").get("properties").get("always");
+    JsonNode thenProperty = schema.get("then").get("properties").get("ifAzure");
     assertThat(thenProperty.get("$ref").asText())
       .isEqualTo("#/$defs/ComplexType");
   }
@@ -108,7 +113,7 @@ class TestFieldCondition {
     public String provider;
 
     @Conditional(ifProperty = "provider", hasConst = { "azure" })
-    public ComplexType always;
+    private ComplexType ifAzure;
 
     public static class ComplexType {
       public String name;

@@ -11,6 +11,7 @@ import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.Module;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 
+import io.github.axonivy.json.schema.annotations.Conditional;
 import io.github.axonivy.json.schema.impl.ConditionalFieldProvider;
 import io.github.axonivy.json.schema.impl.ConfigNamingStrategy;
 import io.github.axonivy.json.schema.impl.CustomTypeProvider;
@@ -45,7 +46,8 @@ public class ExpressiveSchemaModule implements Module {
     configBuilder.forFields()
       .withCustomDefinitionProvider(new RemoteRefProvider(refs))
       .withCustomDefinitionProvider(new ExamplesProvider())
-      .withCustomDefinitionProvider(new CustomTypeProvider());
+      .withCustomDefinitionProvider(new CustomTypeProvider())
+      .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {
       configBuilder.forTypesInGeneral()
