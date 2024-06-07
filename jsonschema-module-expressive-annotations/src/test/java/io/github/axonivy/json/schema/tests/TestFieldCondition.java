@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.axonivy.json.schema.annotations.Condition;
+import io.github.axonivy.json.schema.annotations.Conditional;
 
 class TestFieldCondition {
 
@@ -61,7 +62,6 @@ class TestFieldCondition {
   @Test
   void multiple_constsToVerfiy() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyAnyOfConditionalField.class);
-    System.out.println(schema.toPrettyString());
 
     JsonNode provider = schema.get("if").get("properties").get("provider");
     var anyOf = provider.get("anyOf");
@@ -81,6 +81,78 @@ class TestFieldCondition {
 
     @Condition(ifConst  = { "ms-ad", "azure-idp" }, thenProperty = "config", thenRef = "#/$defs/ComplexType")
     public String provider;
+
+    public ComplexType always;
+
+    public static class ComplexType {
+      public String name;
+    }
+  }
+
+  @Test
+  void conditionalOtherProp() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyConditionalFieldSibling.class);
+
+    JsonNode ifProvider = schema.get("if").get("properties").get("provider");
+    assertThat(ifProvider.get("const").asText())
+      .isEqualTo("azure");
+
+    JsonNode thenProperty = schema.get("then").get("properties").get("always");
+    assertThat(thenProperty.get("$ref").asText())
+      .isEqualTo("#/$defs/ComplexType");
+  }
+
+  static class MyConditionalFieldSibling {
+    public String $schema; // self-ref
+
+    public String provider;
+
+    @Conditional(ifProperty = "provider", hasConst = { "azure" })
+    public ComplexType always;
+
+    public static class ComplexType {
+      public String name;
+    }
+  }
+
+  @Test
+  void conditionAndConditionalOtherProp() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyMixedCondition.class);
+
+    var allOf = (ArrayNode)schema.get("allOf");
+    assertThat(allOf)
+      .as("multiple kinds of conditionals as one 'allOf' condition")
+      .isInstanceOf(ArrayNode.class);
+
+    JsonNode first = allOf.get(0);
+    JsonNode ifProvider = first.get("if").get("properties").get("provider");
+    assertThat(ifProvider.get("const").asText())
+      .isEqualTo("ms-ad");
+    JsonNode thenProperty = first.get("then").get("properties").get("ifAd");
+    assertThat(thenProperty.get("$ref").asText())
+      .isEqualTo("#/$defs/ComplexType");
+
+    JsonNode second = allOf.get(1);
+    JsonNode ifOther = second.get("if").get("properties").get("provider");
+    assertThat(ifOther.get("const").asText())
+      .isEqualTo("azure");
+    JsonNode thenThis = second.get("then").get("properties").get("ifAzure");
+    assertThat(thenThis.get("$ref").asText())
+      .isEqualTo("#/$defs/AzureType");
+  }
+
+  static class MyMixedCondition {
+    public String $schema; // self-ref
+
+    @Condition(ifConst  = { "ms-ad" }, thenProperty = "ifAd", thenRef = "#/$defs/ComplexType")
+    public String provider;
+
+    @Conditional(ifProperty = "provider", hasConst = { "azure" })
+    public AzureType ifAzure;
+
+    public static class AzureType {
+      public String id;
+    }
 
     public ComplexType always;
 
