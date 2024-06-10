@@ -37,14 +37,14 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     ResolvedTypeWithMembers fully = context.getTypeContext().resolveWithMembers(javaType);
     var builder = new ConditionBuilder(context).refs(refs);
     Arrays.stream(fully.getMemberFields())
-      .forEach(fld -> annotate(builder, fld));
+      .forEach(fld -> annotate(builder, fld, context));
     return builder
       .toDefinition(()->context.createStandardDefinition(javaType, this))
       .map(CustomDefinition::new)
       .orElse(null);
   }
 
-  private void annotate(ConditionBuilder builder, ResolvedField field) {
+  private void annotate(ConditionBuilder builder, ResolvedField field, SchemaGenerationContext context) {
     Annotations annotations = field.getAnnotations();
 
     Consumer<Condition> add = condition -> builder.addCondition(condition, field.getName());
@@ -57,7 +57,8 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
       Arrays.stream(conditions.value()).forEachOrdered(add);
     }
 
-    Consumer<Conditional> addConditional = c -> builder.addConditional(c, field);
+    Consumer<Conditional> addConditional = c -> builder.addConditional(c, field,
+        ()->context.createStandardDefinitionReference(field.getType(), ConditionalFieldProvider.this));
     Conditional conditional = field.get(Conditional.class);
     if (conditional != null) {
       addConditional.accept(conditional);
@@ -73,11 +74,9 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     private final SchemaVersion version;
     private final List<ObjectNode> conditions = new ArrayList<>();
     private DynamicRefs refs = new DynamicRefs();
-    private SchemaGenerationContext context;
 
     public ConditionBuilder(SchemaGenerationContext context) {
       this.version = context.getGeneratorConfig().getSchemaVersion();
-      this.context = context;
     }
 
     public ConditionBuilder refs(DynamicRefs resolver) {
@@ -92,9 +91,8 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
       return addCondition(field, condition.ifConst(), condition.thenProperty(), ref);
     }
 
-    public ObjectNode addConditional(Conditional condition, ResolvedField field) {
-      var resolved = context.createStandardDefinitionReference(field.getType(), null);
-      return addCondition(condition.ifProperty(), condition.hasConst(), field.getName(), resolved);
+    public ObjectNode addConditional(Conditional condition, ResolvedField field, Supplier<ObjectNode> reference) {
+      return addCondition(condition.ifProperty(), condition.hasConst(), field.getName(), reference.get());
     }
 
     public ObjectNode addCondition(String field, String expect, String thenProp, JsonNode thenRef) {
