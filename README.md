@@ -139,6 +139,44 @@ Will generate a schema as follows:
 }
 ```
 
+### @TypesAsFields
+
+Adds implementations of a generic type to explicit field references. 
+This is perfect if you maintain a Map with well known keys in your Java objects.
+
+```java
+public CheckTypes checks;
+
+@TypesAsFields(Checks)
+public interface CheckTypes implements Map<String, MyChecker>
+
+
+public static class Checks implements FieldRegistry {
+  @Override
+  public Set<Class<?>> types() {
+    return Set.of(Specific.class, Another.class);
+  }
+}
+```
+
+Will generate a schema as follows:
+
+```json
+"CheckTypes" : {
+  "type" : "object",
+  "additionalProperties" : {
+    "$ref" : "#/$defs/MyChecker"
+  },
+  "properties" : {
+    "Another" : {
+      "$ref" : "#/$defs/Another"
+    },
+    "Specific" : {
+      "$ref" : "#/$defs/Specific"
+    }
+  }
+}
+```
 
 
 ### @AdditionalProperties

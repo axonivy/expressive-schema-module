@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Set;
 
 
 /**
@@ -26,9 +25,7 @@ public @interface Implementations {
   /** the provider of at least all valid-subtypes */
   public Class<? extends TypeReqistry> value();
 
-  public static interface TypeReqistry {
-
-    Set<Class<?>> types();
+  public static interface TypeReqistry extends MultiTypes {
 
     default Class<?> base() {
       return null; // no common properties on impls
@@ -44,7 +41,6 @@ public @interface Implementations {
     default String typeDesc(@SuppressWarnings("unused") Class<?> type) {
       return null;
     }
-
   }
 
 }
