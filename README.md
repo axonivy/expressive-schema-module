@@ -96,7 +96,6 @@ Adds implementations of a generic type into the schema. It will use a virtual ty
 @Implementations(ComponentTypes)
 public Component component;
 
-
 public static class ComponentTypes implements TypeReqistry {
   @Override
   public Set<Class<?>> types() {
@@ -148,8 +147,7 @@ This is perfect if you maintain a Map with well known keys in your Java objects.
 public CheckTypes checks;
 
 @TypesAsFields(Checks)
-public interface CheckTypes implements Map<String, MyChecker>
-
+public interface CheckTypes implements Map<String, MyChecker>{}
 
 public static class Checks implements FieldRegistry {
   @Override
