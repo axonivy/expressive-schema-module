@@ -19,6 +19,7 @@ import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
 import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
+import io.github.axonivy.json.schema.impl.TypesAsFieldsProvider;
 
 
 public class ExpressiveSchemaModule implements Module {
@@ -67,7 +68,8 @@ public class ExpressiveSchemaModule implements Module {
   private void applyImplementations(SchemaGeneratorConfigBuilder configBuilder) {
     boolean conditionals = options.contains(ExpressiveSchemaOption.PREFER_CONDITIONAL_SUBTYPES);
     configBuilder.forTypesInGeneral()
-      .withCustomDefinitionProvider(new ImplementationTypesProvider(conditionals));
+      .withCustomDefinitionProvider(new ImplementationTypesProvider(conditionals))
+      .withCustomDefinitionProvider(new TypesAsFieldsProvider());
   }
 
   private static Object jacksonDefaultVal(FieldScope field) {
