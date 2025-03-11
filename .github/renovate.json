@@ -7,13 +7,9 @@
   "packageRules": [
     {
       "matchPackageNames" :[
-        "org.apache.maven.*"
-      ],
-      "automerge": true
-    },
-    {
-      "extends": [
-        "packages:test"
+        "org.apache.maven.*",
+        "org.junit.jupiter:*",
+        "org.assertj:*"
       ],
       "automerge": true
     }
