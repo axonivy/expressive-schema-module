@@ -5,8 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import io.github.axonivy.json.schema.impl.CustomPropertiesProvider.PropertyContributor;
-
 /**
  * Hint to inject dynamic properties using a {@link PropertyContributor} factory.
  * Handy to describe properties that derive from dynamic sources.

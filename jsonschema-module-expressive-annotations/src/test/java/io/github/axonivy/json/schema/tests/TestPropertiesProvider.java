@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.axonivy.json.schema.annotations.PropertiesProvider;
-import io.github.axonivy.json.schema.impl.CustomPropertiesProvider.PropertyContributor;
+import io.github.axonivy.json.schema.annotations.PropertyContributor;
 
 class TestPropertiesProvider {
 
