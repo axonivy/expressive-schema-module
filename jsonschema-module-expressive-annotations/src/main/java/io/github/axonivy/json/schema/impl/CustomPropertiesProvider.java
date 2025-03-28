@@ -1,6 +1,5 @@
 package io.github.axonivy.json.schema.impl;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -16,8 +15,10 @@ import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
 import io.github.axonivy.json.schema.annotations.PropertiesProvider;
+import io.github.axonivy.json.schema.annotations.PropertyContributor;
 
 public class CustomPropertiesProvider implements CustomDefinitionProviderV2 {
+
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType javaType, SchemaGenerationContext context) {
     var provider = javaType.getErasedType().getAnnotation(PropertiesProvider.class);
@@ -48,7 +49,7 @@ public class CustomPropertiesProvider implements CustomDefinitionProviderV2 {
     var properties = JsonNodeFactory.instance.objectNode();
     contribs.contribute().forEach(prop -> {
       var json = properties.putObject(prop.name());
-      ResolvedType resolvedType = context.getTypeContext().resolve(prop.type);
+      ResolvedType resolvedType = context.getTypeContext().resolve(prop.type());
       json.setAll(context.createDefinition(resolvedType));
       Optional.ofNullable(prop.description())
           .filter(Predicate.not(String::isBlank))
@@ -80,44 +81,6 @@ public class CustomPropertiesProvider implements CustomDefinitionProviderV2 {
       return JsonNodeFactory.instance.booleanNode(bol);
     }
     return null;
-  }
-
-  public interface PropertyContributor {
-
-    List<Prop> contribute();
-
-    public static record Prop(
-        String name,
-        Class<?> type,
-        String description,
-        Object defaultValue,
-        List<String> examples) {
-
-      public static Prop string(String name) {
-        return new Prop(name, String.class, null, null, List.of());
-      }
-
-      public static Prop bool(String name) {
-        return new Prop(name, Boolean.class, null, null, List.of());
-      }
-
-      public static Prop integer(String name) {
-        return new Prop(name, Integer.class, null, null, List.of());
-      }
-
-      public Prop description(String desc) {
-        return new Prop(name, type, desc, defaultValue, examples);
-      }
-
-      public Prop defaultValue(Object value) {
-        return new Prop(name, type, description, value, examples);
-      }
-
-      public Prop examples(List<String> ex) {
-        return new Prop(name, type, description, defaultValue, ex);
-      }
-    }
-
   }
 
 }
