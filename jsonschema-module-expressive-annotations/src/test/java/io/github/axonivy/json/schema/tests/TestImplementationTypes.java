@@ -160,7 +160,7 @@ class TestImplementationTypes {
     return names;
   }
 
-  private static List<JsonNode> nodesOf(JsonNode types) {
+  static List<JsonNode> nodesOf(JsonNode types) {
     var values = new ArrayList<JsonNode>();
     types.elements().forEachRemaining(values::add);
     return values;

@@ -176,6 +176,58 @@ Will generate a schema as follows:
 }
 ```
 
+### @PropertiesProvider
+
+Adds dynamic properties to your type definition.
+
+```java
+@PropertiesProvider(HookProperties.class)
+interface DynamicRunner {}
+
+public static class HookProperties implements PropertyContributor {
+
+  @Override
+  public List<Prop> contribute() {
+    return List.of(
+        Prop.string("speed")
+            .description("how fast do you wanna go?")
+            .examples(List.of("slow", "fast"))
+            .defaultValue("fast"),
+        Prop.bool("enabled")
+            .defaultValue(true),
+        Prop.integer("passengers")
+            .description("amount of seats")
+            .defaultValue(2));
+  }
+}
+```
+
+Will generate a schema as follows:
+
+```json
+"DynamicRunner" : {
+  "type" : "object",
+  "additionalProperties" : false,
+  "properties" : {
+    "speed" : {
+      "type" : "string",
+      "description" : "how fast do you wanna go?",
+      "default" : "fast",
+      "examples" : [ "slow", "fast" ]
+    },
+    "enabled" : {
+      "type" : "boolean",
+      "default" : true
+    },
+    "passengers" : {
+      "type" : "integer",
+      "description" : "amount of seats",
+      "default" : 2
+    }
+  }
+}
+```
+
 
 ### @AdditionalProperties
 
