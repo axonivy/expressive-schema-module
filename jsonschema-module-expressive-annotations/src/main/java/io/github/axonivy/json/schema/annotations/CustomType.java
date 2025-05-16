@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * Type hint to be used when generating json-schema.
  * Without the need to actually change the type used in the java object model.
  */
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CustomType {
 

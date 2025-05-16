@@ -22,7 +22,6 @@ import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
 import io.github.axonivy.json.schema.impl.TypesAsFieldsProvider;
 
-
 public class ExpressiveSchemaModule implements Module {
 
   private final Set<ExpressiveSchemaOption> options;
@@ -44,25 +43,26 @@ public class ExpressiveSchemaModule implements Module {
   @Override
   public void applyToConfigBuilder(SchemaGeneratorConfigBuilder configBuilder) {
     configBuilder.forTypesInGeneral()
-      .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
-      .withCustomDefinitionProvider(new CustomPropertiesProvider());
+        .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
+        .withCustomDefinitionProvider(new CustomPropertiesProvider())
+        .withCustomDefinitionProvider(new CustomTypeProvider());
     configBuilder.forFields()
-      .withCustomDefinitionProvider(new RemoteRefProvider(refs))
-      .withCustomDefinitionProvider(new ExamplesProvider())
-      .withCustomDefinitionProvider(new CustomTypeProvider())
-      .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);
+        .withCustomDefinitionProvider(new RemoteRefProvider(refs))
+        .withCustomDefinitionProvider(new ExamplesProvider())
+        .withCustomDefinitionProvider(new CustomTypeProvider())
+        .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {
       configBuilder.forTypesInGeneral()
-        .withAdditionalPropertiesResolver(new io.github.axonivy.json.schema.impl.AdditionalPropsSupplier());
+          .withAdditionalPropertiesResolver(new io.github.axonivy.json.schema.impl.AdditionalPropsSupplier());
     }
     if (options.contains(ExpressiveSchemaOption.USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE)) {
       configBuilder.forFields()
-        .withDefaultResolver(ExpressiveSchemaModule::jacksonDefaultVal);
+          .withDefaultResolver(ExpressiveSchemaModule::jacksonDefaultVal);
     }
     if (options.contains(ExpressiveSchemaOption.USE_SCHEMA_SUFFIX_NAMING_STRATEGY)) {
       configBuilder.forTypesInGeneral()
-        .withDefinitionNamingStrategy(new ConfigNamingStrategy());
+          .withDefinitionNamingStrategy(new ConfigNamingStrategy());
     }
     applyImplementations(configBuilder);
   }
@@ -70,19 +70,19 @@ public class ExpressiveSchemaModule implements Module {
   private void applyImplementations(SchemaGeneratorConfigBuilder configBuilder) {
     boolean conditionals = options.contains(ExpressiveSchemaOption.PREFER_CONDITIONAL_SUBTYPES);
     configBuilder.forTypesInGeneral()
-      .withCustomDefinitionProvider(new ImplementationTypesProvider(conditionals))
-      .withCustomDefinitionProvider(new TypesAsFieldsProvider());
+        .withCustomDefinitionProvider(new ImplementationTypesProvider(conditionals))
+        .withCustomDefinitionProvider(new TypesAsFieldsProvider());
   }
 
   private static Object jacksonDefaultVal(FieldScope field) {
     JsonProperty annotation = field.getAnnotationConsideringFieldAndGetter(JsonProperty.class);
     return Optional.ofNullable(annotation)
-      .map(JsonProperty::defaultValue)
-      .filter(Predicate.not(String::isEmpty))
-      .orElse(null);
+        .map(JsonProperty::defaultValue)
+        .filter(Predicate.not(String::isEmpty))
+        .orElse(null);
   }
 
-  public static enum ExpressiveSchemaOption {
+  public enum ExpressiveSchemaOption {
     USE_ADDITIONAL_PROPERTIES_ANNOTATION,
     USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE,
     USE_SCHEMA_SUFFIX_NAMING_STRATEGY,
