@@ -287,6 +287,24 @@ Generates:
 }
 ```
 
+### @StringWrapper
+
+Represents a type as simple string.
+
+```java
+@StringWrapper
+record Id(String theId) {}
+```
+
+Generates:
+
+```json
+"Id" : {
+  "type" : "string"
+}
+```
+
+
 ## Options
 
 The module comes with a few opt-in schema features. See the `ExpressiveSchemaOption` enumeration.
