@@ -19,11 +19,12 @@ jobs:
           with:
             java-version: '17'
             distribution: 'temurin'
-            server-id: ossrh
+            server-id: central
             server-username: MAVEN_USERNAME
             server-password: MAVEN_PASSWORD
             gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
             gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
         - name: Configure Git
           run: |
             git config user.email "${{ github.actor }}@users.noreply.github.com"
@@ -39,8 +40,9 @@ jobs:
             releasedVersion=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec)
             git tag "v${releasedVersion}" -a -m "Official release ${releasedVersion}"
             git push origin "v${releasedVersion}"
+
         - name: Publish package
-          run: mvn --batch-mode -f pom.xml deploy -PossrhDeploy 
+          run: mvn --batch-mode -f pom.xml deploy -PcentralDeploy 
           env:
             MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
             MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
