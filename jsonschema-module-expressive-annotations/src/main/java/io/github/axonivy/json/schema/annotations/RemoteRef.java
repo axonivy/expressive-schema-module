@@ -22,7 +22,7 @@ public @interface RemoteRef {
   public String value() default "";
 
   /**
-   * @return refers a remote type on a Map<String, Object> for the value.
+   * @return refers a remote type on a {@link java.util.Map Map&lt;String, Object&gt;} for the value.
    */
   public String mapValueType() default "";
 }
