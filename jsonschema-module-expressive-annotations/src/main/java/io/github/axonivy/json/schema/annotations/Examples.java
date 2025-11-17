@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * @see "https://json-schema.org/understanding-json-schema/reference/generic.html#id2"
  *
  */
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Examples {
 

@@ -10,7 +10,7 @@ We supply frequently required json-schema hints by introducing annotations, that
 
 ### @Examples
 
-Simply annotate any field with `@Examples`, in order to supply valid values for it:
+Simply annotate any field or type with `@Examples`, in order to supply valid values for it:
 
 ```java
 @Examples({"superFastProvider", "speedBuster", "cheapAndSlow"})
