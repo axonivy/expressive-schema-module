@@ -6,7 +6,7 @@
 
   <groupId>io.github.axonivy</groupId>
   <artifactId>jsonschema-module-expressive-annotations</artifactId>
-  <version>1.0.14-SNAPSHOT</version>
+  <version>1.0.15-SNAPSHOT</version>
 
   <name>jsonschema expressive annotations module</name>
   <description>Simple annotations to provide json-schema hints right on your object models</description>
