@@ -20,6 +20,7 @@ import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
 import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
+import io.github.axonivy.json.schema.impl.StringWrapperProvider;
 import io.github.axonivy.json.schema.impl.TypesAsFieldsProvider;
 
 public class ExpressiveSchemaModule implements Module {
@@ -46,7 +47,8 @@ public class ExpressiveSchemaModule implements Module {
         .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
         .withCustomDefinitionProvider(new CustomPropertiesProvider())
         .withCustomDefinitionProvider(new CustomTypeProvider())
-        .withCustomDefinitionProvider(new ExamplesProvider());
+        .withCustomDefinitionProvider(new ExamplesProvider())
+        .withCustomDefinitionProvider(new StringWrapperProvider());
     configBuilder.forFields()
         .withCustomDefinitionProvider(new RemoteRefProvider(refs))
         .withCustomDefinitionProvider(new ExamplesProvider())
