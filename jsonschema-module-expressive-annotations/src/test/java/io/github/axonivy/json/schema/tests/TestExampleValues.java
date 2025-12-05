@@ -1,5 +1,6 @@
 package io.github.axonivy.json.schema.tests;
 
+import static io.github.axonivy.json.schema.tests.TestTypesAsFields.namesOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -46,5 +48,34 @@ class TestExampleValues {
 
   @Examples({"com.acme.MyId", "com.acme.MyId:methodRef"})
   static class TypeReference {}
+
+  @Test
+  void listExamples() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(ChatModel.class);
+    System.out.println(schema.toPrettyString());
+
+    var capabilities = schema.get("properties").get("capabilities");
+    assertThat(textNodes(capabilities.get("examples")))
+        .containsOnly("JSON_SCHEMA", "IMAGE_GENERATOR");
+
+    var items = capabilities.get("items");
+    assertThat(namesOf(items))
+        .as("examples are only stated on the array, not on its items")
+        .containsOnly("type");
+  }
+
+  static List<String> textNodes(JsonNode node) {
+    if (node instanceof ArrayNode array) {
+      List<String> values = new ArrayList<>();
+      array.elements().forEachRemaining(n -> values.add(n.asText()));
+      return values;
+    }
+    return List.of();
+  }
+
+  static class ChatModel {
+    @Examples({"JSON_SCHEMA", "IMAGE_GENERATOR"})
+    List<String> capabilities;
+  }
 
 }
