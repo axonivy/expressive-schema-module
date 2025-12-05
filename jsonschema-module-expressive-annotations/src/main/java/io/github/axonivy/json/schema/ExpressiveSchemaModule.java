@@ -42,14 +42,15 @@ public class ExpressiveSchemaModule implements Module {
 
   @Override
   public void applyToConfigBuilder(SchemaGeneratorConfigBuilder configBuilder) {
+    var examples = new ExamplesProvider();
     configBuilder.forTypesInGeneral()
         .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
         .withCustomDefinitionProvider(new CustomPropertiesProvider())
         .withCustomDefinitionProvider(new CustomTypeProvider())
-        .withCustomDefinitionProvider(new ExamplesProvider());
+        .withCustomDefinitionProvider(examples);
     configBuilder.forFields()
         .withCustomDefinitionProvider(new RemoteRefProvider(refs))
-        .withCustomDefinitionProvider(new ExamplesProvider())
+        .withCustomDefinitionProvider(examples)
         .withCustomDefinitionProvider(new CustomTypeProvider())
         .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);
 

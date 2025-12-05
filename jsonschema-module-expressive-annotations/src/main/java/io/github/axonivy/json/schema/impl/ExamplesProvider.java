@@ -1,6 +1,9 @@
 package io.github.axonivy.json.schema.impl;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,15 +21,33 @@ import io.github.axonivy.json.schema.annotations.Examples;
 
 public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldScope>, CustomDefinitionProviderV2 {
 
+  private final Set<Field> visited = new HashSet<>();
+
   @Override
   public CustomPropertyDefinition provideCustomSchemaDefinition(FieldScope scope, SchemaGenerationContext context) {
     Examples examples = scope.getAnnotation(Examples.class);
     if (examples == null) {
       return null;
     }
-    var def = context.createStandardDefinition(scope, this);
+    var def = resolveStd(scope, context);
+    if (def == null) {
+      return null;
+    }
     declareExamples(def, examples, context);
     return new CustomPropertyDefinition(def);
+  }
+
+  private ObjectNode resolveStd(FieldScope scope, SchemaGenerationContext context) {
+    var unique = scope.getMember().getRawMember();
+    if (visited.contains(unique)) {
+      return null; // do not re-declare examples for collection-members
+    }
+    visited.add(unique);
+    try {
+      return context.createStandardDefinition(scope, this);
+    } finally {
+      visited.remove(unique);
+    }
   }
 
   private static void declareExamples(ObjectNode def, Examples examples, SchemaGenerationContext context) {
