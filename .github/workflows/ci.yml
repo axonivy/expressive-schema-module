@@ -21,7 +21,7 @@ jobs:
     - name: Setup Java JDK
       uses: actions/setup-java@v5
       with:
-        java-version: 17
+        java-version: 25
         distribution: temurin
 
     - name: Build with Maven
@@ -31,7 +31,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
-        junit_files: |
+        files: |
           **/*/target/*-reports/*.xml
 
     - name: Archive build artifact

@@ -37,7 +37,7 @@
   <properties>
     <java.module.name>com.axonivy.json.schema.module.expressive.annotations</java.module.name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.release>25</maven.compiler.release>
     <victools.version>5.0.0</victools.version>
   </properties>
 
