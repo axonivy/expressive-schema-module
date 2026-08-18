@@ -6,9 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.classmate.ResolvedType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.CustomPropertyDefinition;
@@ -18,6 +15,10 @@ import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
 import io.github.axonivy.json.schema.annotations.Examples;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldScope>, CustomDefinitionProviderV2 {
 

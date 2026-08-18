@@ -8,12 +8,12 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestImplementationTypesNaming {
 
@@ -28,11 +28,10 @@ class TestImplementationTypesNaming {
     assertThat(types).isInstanceOf(ArrayNode.class);
 
     assertThat(nodesOf(types))
-      .extracting(JsonNode::asText)
-      .containsOnly(
-        "another-custom",
-        "specific-custom"
-      );
+        .extracting(JsonNode::asString)
+        .containsOnly(
+            "another-custom",
+            "specific-custom");
   }
 
   @Test
@@ -40,17 +39,14 @@ class TestImplementationTypesNaming {
     var generic = defs.get(Generic.class.getSimpleName());
     var allOf = generic.get("allOf");
     assertThat(nodesOf(allOf))
-      .extracting(n -> n.get("if").get("properties").get("type").get("const").asText())
-      .containsOnly(
-        "another-custom",
-        "specific-custom"
-      );
+        .extracting(n -> n.get("if").get("properties").get("type").get("const").asString())
+        .containsOnly(
+            "another-custom",
+            "specific-custom");
   }
 
   private static List<JsonNode> nodesOf(JsonNode types) {
-    var values = new ArrayList<JsonNode>();
-    types.elements().forEachRemaining(values::add);
-    return values;
+    return new ArrayList<>(types.values());
   }
 
   static class MyRootType {
@@ -58,7 +54,7 @@ class TestImplementationTypesNaming {
   }
 
   @Implementations(LocalFactory.class)
-  public static interface Generic {
+  public interface Generic {
     String id();
   }
 
@@ -87,7 +83,7 @@ class TestImplementationTypesNaming {
 
     @Override
     public String typeName(Class<?> type) {
-      return type.getSimpleName().toLowerCase()+"-custom";
+      return type.getSimpleName().toLowerCase() + "-custom";
     }
   }
 

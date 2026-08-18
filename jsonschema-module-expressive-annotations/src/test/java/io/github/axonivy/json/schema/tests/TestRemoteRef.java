@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.RemoteRef;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestRemoteRef {
 
@@ -15,8 +15,8 @@ class TestRemoteRef {
   void remoteSibling() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MySchema.class);
     JsonNode sibling = schema.get("properties").get("sibling");
-    assertThat(sibling.get("$ref").asText())
-      .isEqualTo("/ivy/a-sibling.json");
+    assertThat(sibling.get("$ref").asString())
+        .isEqualTo("/ivy/a-sibling.json");
   }
 
   static class MySchema {
@@ -30,10 +30,10 @@ class TestRemoteRef {
     try {
       ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyIvySchema.class);
       JsonNode sibling = schema.get("properties").get("sibling");
-      assertThat(sibling.get("$ref").asText())
-        .startsWith("/ivy/")
-        .doesNotContain("config.version")
-        .endsWith("/a-sibling.json");
+      assertThat(sibling.get("$ref").asString())
+          .startsWith("/ivy/")
+          .doesNotContain("config.version")
+          .endsWith("/a-sibling.json");
     } finally {
       System.clearProperty("config.version");
     }
@@ -45,10 +45,10 @@ class TestRemoteRef {
     generator.module.property("config.version", "0.0.7");
     ObjectNode schema = generator.generateSchema(MyIvySchema.class);
     JsonNode sibling = schema.get("properties").get("sibling");
-    assertThat(sibling.get("$ref").asText())
-      .startsWith("/ivy/")
-      .doesNotContain("config.version")
-      .endsWith("/a-sibling.json");
+    assertThat(sibling.get("$ref").asString())
+        .startsWith("/ivy/")
+        .doesNotContain("config.version")
+        .endsWith("/a-sibling.json");
   }
 
   static class MyIvySchema {

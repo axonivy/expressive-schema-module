@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.PropertiesProvider;
 import io.github.axonivy.json.schema.annotations.PropertyContributor;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestPropertiesProvider {
 
@@ -26,24 +26,24 @@ class TestPropertiesProvider {
         .containsOnly("speed", "enabled", "passengers");
 
     var speed = props.get("speed");
-    assertThat(speed.get("type").asText())
+    assertThat(speed.get("type").asString())
         .isEqualTo("string");
-    assertThat(speed.get("description").asText())
+    assertThat(speed.get("description").asString())
         .isEqualTo("how fast do you wanna go?");
-    assertThat(speed.get("default").asText())
+    assertThat(speed.get("default").asString())
         .isEqualTo("fast");
     assertThat(nodesOf(speed.get("examples")))
-        .extracting(JsonNode::asText)
+        .extracting(JsonNode::asString)
         .containsOnly("slow", "fast");
 
     var enabled = props.get("enabled");
-    assertThat(enabled.get("type").asText())
+    assertThat(enabled.get("type").asString())
         .isEqualTo("boolean");
     assertThat(enabled.get("default").asBoolean())
         .isEqualTo(true);
 
     var passengers = props.get("passengers");
-    assertThat(passengers.get("type").asText())
+    assertThat(passengers.get("type").asString())
         .isEqualTo("integer");
     assertThat(passengers.get("default").asInt())
         .isEqualTo(2);

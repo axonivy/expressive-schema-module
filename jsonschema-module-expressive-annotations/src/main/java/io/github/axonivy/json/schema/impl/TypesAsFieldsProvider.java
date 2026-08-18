@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.util.Optional;
 
 import com.fasterxml.classmate.ResolvedType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
@@ -13,6 +12,7 @@ import com.github.victools.jsonschema.generator.SchemaKeyword;
 import io.github.axonivy.json.schema.annotations.TypesAsFields;
 import io.github.axonivy.json.schema.annotations.TypesAsFields.FieldRegistry;
 
+import tools.jackson.databind.node.ObjectNode;
 
 public class TypesAsFieldsProvider implements CustomDefinitionProviderV2 {
 
@@ -24,8 +24,8 @@ public class TypesAsFieldsProvider implements CustomDefinitionProviderV2 {
     }
     ObjectNode std = context.createStandardDefinition(javaType, this);
     String properties = context.getKeyword(SchemaKeyword.TAG_PROPERTIES);
-    var props = Optional.ofNullable((ObjectNode)std.get(properties))
-            .orElseGet(() -> std.putObject(properties));
+    var props = Optional.ofNullable((ObjectNode) std.get(properties))
+        .orElseGet(() -> std.putObject(properties));
     FieldRegistry registry = create(typesAsFields.value());
     new FieldCreator(registry, context).typesAsFields(props);
     return new CustomDefinition(std);
@@ -43,10 +43,10 @@ public class TypesAsFieldsProvider implements CustomDefinitionProviderV2 {
 
     private void typesAsFields(ObjectNode props) {
       registry.types().stream()
-        .sorted((c1,c2) -> String.CASE_INSENSITIVE_ORDER.compare(c1.getSimpleName(), c2.getSimpleName()))
-        .forEachOrdered(type -> {
-          toProperty(props, type);
-      });
+          .sorted((c1, c2) -> String.CASE_INSENSITIVE_ORDER.compare(c1.getSimpleName(), c2.getSimpleName()))
+          .forEachOrdered(type -> {
+            toProperty(props, type);
+          });
     }
 
     private void toProperty(ObjectNode props, Class<?> type) {
@@ -67,7 +67,7 @@ public class TypesAsFieldsProvider implements CustomDefinitionProviderV2 {
       Constructor<?> constructor = registryType.getConstructors()[0];
       return (FieldRegistry) constructor.newInstance();
     } catch (Exception ex) {
-      throw new RuntimeException("Failed to create type registry: "+registryType+". Does it have a public zero-arg constructor?", ex);
+      throw new RuntimeException("Failed to create type registry: " + registryType + ". Does it have a public zero-arg constructor?", ex);
     }
   }
 }

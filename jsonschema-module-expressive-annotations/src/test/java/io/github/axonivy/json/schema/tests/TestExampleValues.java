@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.Examples;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestExampleValues {
 
@@ -31,15 +31,9 @@ class TestExampleValues {
   void typesWithExamples() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(Container.class);
     var typeRef = schema.get("$defs").get(TypeReference.class.getSimpleName());
-    var examples = (ArrayNode) typeRef.get("examples");
-    assertThat(stringsOf(examples))
+    var examples = typeRef.get("examples");
+    assertThat(textNodes(examples))
         .containsExactly("com.acme.MyId", "com.acme.MyId:methodRef");
-  }
-
-  static List<String> stringsOf(ArrayNode node) {
-    List<String> strings = new ArrayList<>();
-    node.elements().forEachRemaining(it -> strings.add(it.asText()));
-    return strings;
   }
 
   static class Container {
@@ -67,7 +61,7 @@ class TestExampleValues {
   static List<String> textNodes(JsonNode node) {
     if (node instanceof ArrayNode array) {
       List<String> values = new ArrayList<>();
-      array.elements().forEachRemaining(n -> values.add(n.asText()));
+      array.elements().stream().forEach(n -> values.add(n.asString()));
       return values;
     }
     return List.of();
