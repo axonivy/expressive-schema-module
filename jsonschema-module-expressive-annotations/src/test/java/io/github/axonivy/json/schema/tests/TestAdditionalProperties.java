@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.AdditionalProperties;
+
+import tools.jackson.databind.node.ObjectNode;
 
 class TestAdditionalProperties {
 

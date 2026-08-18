@@ -8,12 +8,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.Condition;
 import io.github.axonivy.json.schema.annotations.Conditional;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestFieldCondition {
 
@@ -22,16 +22,16 @@ class TestFieldCondition {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyConditionalField.class);
 
     JsonNode ifConst = schema.get("if").get("properties").get("provider").get("const");
-    assertThat(ifConst.asText())
-      .isEqualTo("azure-idp");
+    assertThat(ifConst.asString())
+        .isEqualTo("azure-idp");
 
     var then = schema.get("then").get("properties").get("config").get("$ref");
-    assertThat(then.asText())
-      .isEqualTo("/ivy/azure-config.json");
+    assertThat(then.asString())
+        .isEqualTo("/ivy/azure-config.json");
   }
 
   static class MyConditionalField {
-    @Condition(ifConst  = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
+    @Condition(ifConst = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
     public String provider;
   }
 
@@ -40,23 +40,22 @@ class TestFieldCondition {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyMultiConditionalField.class);
 
     var allOf = (ArrayNode) schema.get("allOf");
-    List<JsonNode> conditions = new ArrayList<>();
-    allOf.elements().forEachRemaining(conditions::add);
+    List<JsonNode> conditions = new ArrayList<>(allOf.values());
     assertThat(conditions).hasSize(2);
 
     JsonNode first = allOf.get(0);
     JsonNode ifConst = first.get("if").get("properties").get("provider").get("const");
-    assertThat(ifConst.asText())
-      .isEqualTo("azure-idp");
+    assertThat(ifConst.asString())
+        .isEqualTo("azure-idp");
 
     var then = first.get("then").get("properties").get("config").get("$ref");
-    assertThat(then.asText())
-      .isEqualTo("/ivy/azure-config.json");
+    assertThat(then.asString())
+        .isEqualTo("/ivy/azure-config.json");
   }
 
   static class MyMultiConditionalField {
-    @Condition(ifConst  = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
-    @Condition(ifConst  = "ms-ad", thenProperty = "config", thenRef = "/ivy/ldap-config.json")
+    @Condition(ifConst = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
+    @Condition(ifConst = "ms-ad", thenProperty = "config", thenRef = "/ivy/ldap-config.json")
     public String provider;
   }
 
@@ -69,18 +68,18 @@ class TestFieldCondition {
     assertThat(anyOf).isInstanceOf(ArrayNode.class).hasSize(2);
 
     JsonNode ifConst = anyOf.get(0).get("const");
-    assertThat(ifConst.asText())
-      .isEqualTo("ms-ad");
+    assertThat(ifConst.asString())
+        .isEqualTo("ms-ad");
 
     var then = schema.get("then").get("properties").get("config").get("$ref");
-    assertThat(then.asText())
-      .isEqualTo("#/$defs/ComplexType");
+    assertThat(then.asString())
+        .isEqualTo("#/$defs/ComplexType");
   }
 
   static class MyAnyOfConditionalField {
     public String $schema; // self-ref
 
-    @Condition(ifConst  = { "ms-ad", "azure-idp" }, thenProperty = "config", thenRef = "#/$defs/ComplexType")
+    @Condition(ifConst = {"ms-ad", "azure-idp"}, thenProperty = "config", thenRef = "#/$defs/ComplexType")
     public String provider;
 
     public ComplexType always;
@@ -95,16 +94,16 @@ class TestFieldCondition {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyConditionalFieldSibling.class);
 
     assertThat(namesOf(schema.get("properties")))
-      .as("conditional fields are not listed as classic 'properties'")
-      .containsOnly("$schema", "provider");
+        .as("conditional fields are not listed as classic 'properties'")
+        .containsOnly("$schema", "provider");
 
     JsonNode ifProvider = schema.get("if").get("properties").get("provider");
-    assertThat(ifProvider.get("const").asText())
-      .isEqualTo("azure");
+    assertThat(ifProvider.get("const").asString())
+        .isEqualTo("azure");
 
     JsonNode thenProperty = schema.get("then").get("properties").get("ifAzure");
-    assertThat(thenProperty.get("$ref").asText())
-      .isEqualTo("#/$defs/ComplexType");
+    assertThat(thenProperty.get("$ref").asString())
+        .isEqualTo("#/$defs/ComplexType");
   }
 
   static class MyConditionalFieldSibling {
@@ -112,7 +111,7 @@ class TestFieldCondition {
 
     public String provider;
 
-    @Conditional(ifProperty = "provider", hasConst = { "azure" })
+    @Conditional(ifProperty = "provider", hasConst = {"azure"})
     private ComplexType ifAzure;
 
     public static class ComplexType {
@@ -124,35 +123,35 @@ class TestFieldCondition {
   void conditionAndConditionalOtherProp() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyMixedCondition.class);
 
-    var allOf = (ArrayNode)schema.get("allOf");
+    var allOf = (ArrayNode) schema.get("allOf");
     assertThat(allOf)
-      .as("multiple kinds of conditionals as one 'allOf' condition")
-      .isInstanceOf(ArrayNode.class);
+        .as("multiple kinds of conditionals as one 'allOf' condition")
+        .isInstanceOf(ArrayNode.class);
 
     JsonNode first = allOf.get(0);
     JsonNode ifProvider = first.get("if").get("properties").get("provider");
-    assertThat(ifProvider.get("const").asText())
-      .isEqualTo("ms-ad");
+    assertThat(ifProvider.get("const").asString())
+        .isEqualTo("ms-ad");
     JsonNode thenProperty = first.get("then").get("properties").get("ifAd");
-    assertThat(thenProperty.get("$ref").asText())
-      .isEqualTo("#/$defs/ComplexType");
+    assertThat(thenProperty.get("$ref").asString())
+        .isEqualTo("#/$defs/ComplexType");
 
     JsonNode second = allOf.get(1);
     JsonNode ifOther = second.get("if").get("properties").get("provider");
-    assertThat(ifOther.get("const").asText())
-      .isEqualTo("azure");
+    assertThat(ifOther.get("const").asString())
+        .isEqualTo("azure");
     JsonNode thenThis = second.get("then").get("properties").get("ifAzure");
-    assertThat(thenThis.get("$ref").asText())
-      .isEqualTo("#/$defs/AzureType");
+    assertThat(thenThis.get("$ref").asString())
+        .isEqualTo("#/$defs/AzureType");
   }
 
   static class MyMixedCondition {
     public String $schema; // self-ref
 
-    @Condition(ifConst  = { "ms-ad" }, thenProperty = "ifAd", thenRef = "#/$defs/ComplexType")
+    @Condition(ifConst = {"ms-ad"}, thenProperty = "ifAd", thenRef = "#/$defs/ComplexType")
     public String provider;
 
-    @Conditional(ifProperty = "provider", hasConst = { "azure" })
+    @Conditional(ifProperty = "provider", hasConst = {"azure"})
     public AzureType ifAzure;
 
     public static class AzureType {

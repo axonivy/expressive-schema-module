@@ -2,7 +2,6 @@ package io.github.axonivy.json.schema.tests;
 
 import java.util.EnumSet;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.Option;
 import com.github.victools.jsonschema.generator.OptionPreset;
 import com.github.victools.jsonschema.generator.SchemaGenerator;
@@ -11,6 +10,8 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 
 import io.github.axonivy.json.schema.ExpressiveSchemaModule;
 import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
+
+import tools.jackson.databind.node.ObjectNode;
 
 public class ExpressiveSchemaGenerator {
 

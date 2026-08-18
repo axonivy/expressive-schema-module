@@ -10,10 +10,10 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.CustomType;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestCustomType {
 
@@ -21,14 +21,14 @@ class TestCustomType {
   void useCustomType_field() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(Examplified.class);
     JsonNode provider = schema.get("properties").get("provider");
-    assertThat(provider.get("$ref").asText()).contains("/Provider");
+    assertThat(provider.get("$ref").asString()).contains("/Provider");
   }
 
   @Test
   void useCustomType_record() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(User.class);
     JsonNode provider = schema.get("properties").get("provider");
-    assertThat(provider.get("$ref").asText()).contains("/Provider");
+    assertThat(provider.get("$ref").asString()).contains("/Provider");
   }
 
   static class Examplified {
@@ -51,11 +51,11 @@ class TestCustomType {
     var role = schema.get("properties");
     var id = role.get("id");
 
-    assertThat(id.get("$ref").asText())
+    assertThat(id.get("$ref").asString())
         .as("custom types still get their own reference")
         .endsWith("/Identifier");
     var identifier = schema.get("$defs").get("Identifier");
-    assertThat(identifier.get("type").asText())
+    assertThat(identifier.get("type").asString())
         .as("declares a custom-type, unrelated to the real object")
         .isEqualTo("integer");
   }
@@ -74,7 +74,7 @@ class TestCustomType {
     System.out.println(schema.toPrettyString());
 
     var textId = schema.get("$defs").get(TextId.class.getSimpleName());
-    assertThat(textId.get("type").asText())
+    assertThat(textId.get("type").asString())
         .isEqualTo("string");
   }
 
@@ -98,7 +98,7 @@ class TestCustomType {
     System.out.println(schema.toPrettyString());
 
     var id = schema.get("properties").get("id");
-    assertThat(id.get("type").asText())
+    assertThat(id.get("type").asString())
         .isEqualTo("string");
   }
 

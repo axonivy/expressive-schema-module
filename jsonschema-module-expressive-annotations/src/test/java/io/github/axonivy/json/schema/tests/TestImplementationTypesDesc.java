@@ -8,12 +8,12 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestImplementationTypesDesc {
 
@@ -25,28 +25,25 @@ class TestImplementationTypesDesc {
     System.out.println(schema.toPrettyString());
     var props = defs.get(Generic.class.getSimpleName()).get("properties");
     var type = props.get("type");
-    assertThat(type.get("type").asText())
-      .as("native string property nature is declared")
-      .isEqualTo("string");
+    assertThat(type.get("type").asString())
+        .as("native string property nature is declared")
+        .isEqualTo("string");
 
     var types = type.get("anyOf");
     assertThat(types)
-      .as("any of enriches the string with valid const's and its description")
-      .isInstanceOf(ArrayNode.class);
+        .as("any of enriches the string with valid const's and its description")
+        .isInstanceOf(ArrayNode.class);
     assertThat(nodesOf(types))
-      .extracting(JsonNode::toPrettyString)
-      .contains("""
-        {
-          "const" : "Specific",
-          "description" : "verbose Specific"
-        }"""
-      );
+        .extracting(JsonNode::toPrettyString)
+        .contains("""
+          {
+            "const" : "Specific",
+            "description" : "verbose Specific"
+          }""");
   }
 
   private static List<JsonNode> nodesOf(JsonNode types) {
-    var values = new ArrayList<JsonNode>();
-    types.elements().forEachRemaining(values::add);
-    return values;
+    return new ArrayList<>(types.values());
   }
 
   static class MyRootType {
@@ -54,7 +51,7 @@ class TestImplementationTypesDesc {
   }
 
   @Implementations(LocalFactory.class)
-  public static interface Generic {
+  public interface Generic {
     String id();
   }
 
@@ -83,7 +80,7 @@ class TestImplementationTypesDesc {
 
     @Override
     public String typeDesc(Class<?> type) {
-      return "verbose "+type.getSimpleName();
+      return "verbose " + type.getSimpleName();
     }
   }
 

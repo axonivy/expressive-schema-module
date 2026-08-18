@@ -11,10 +11,6 @@ import com.fasterxml.classmate.Annotations;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.ResolvedTypeWithMembers;
 import com.fasterxml.classmate.members.ResolvedField;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
@@ -24,9 +20,14 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import io.github.axonivy.json.schema.annotations.Condition;
 import io.github.axonivy.json.schema.annotations.Conditional;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+
 public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
-  private DynamicRefs refs;
+  private final DynamicRefs refs;
 
   public ConditionalFieldProvider(DynamicRefs refs) {
     this.refs = refs;
@@ -37,11 +38,11 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     ResolvedTypeWithMembers fully = context.getTypeContext().resolveWithMembers(javaType);
     var builder = new ConditionBuilder(context).refs(refs);
     Arrays.stream(fully.getMemberFields())
-      .forEach(fld -> annotate(builder, fld, context));
+        .forEach(fld -> annotate(builder, fld, context));
     return builder
-      .toDefinition(()->context.createStandardDefinition(javaType, this))
-      .map(CustomDefinition::new)
-      .orElse(null);
+        .toDefinition(() -> context.createStandardDefinition(javaType, this))
+        .map(CustomDefinition::new)
+        .orElse(null);
   }
 
   private void annotate(ConditionBuilder builder, ResolvedField field, SchemaGenerationContext context) {
@@ -58,7 +59,7 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     }
 
     Consumer<Conditional> addConditional = c -> builder.addConditional(c, field,
-        ()->context.createStandardDefinitionReference(field.getType(), ConditionalFieldProvider.this));
+        () -> context.createStandardDefinitionReference(field.getType(), ConditionalFieldProvider.this));
     Conditional conditional = field.get(Conditional.class);
     if (conditional != null) {
       addConditional.accept(conditional);
@@ -109,9 +110,9 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
     private void ifProperty(String field, String[] expect, ObjectNode target) {
       var ifProperty = target
-        .putObject(SchemaKeyword.TAG_IF.forVersion(version))
-        .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
-        .putObject(field);
+          .putObject(SchemaKeyword.TAG_IF.forVersion(version))
+          .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
+          .putObject(field);
 
       String constTag = SchemaKeyword.TAG_CONST.forVersion(version);
       if (expect.length == 1) {
@@ -119,16 +120,16 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
         return;
       }
       var anyOf = ifProperty.putArray(SchemaKeyword.TAG_ANYOF.forVersion(version));
-      for(String exp : expect) {
+      for (String exp : expect) {
         anyOf.addObject().put(constTag, exp);
       }
     }
 
     private void thenProperty(String thenProp, JsonNode thenRef, ObjectNode target) {
       target
-        .putObject(SchemaKeyword.TAG_THEN.forVersion(version))
-        .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
-        .set(thenProp, thenRef);
+          .putObject(SchemaKeyword.TAG_THEN.forVersion(version))
+          .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
+          .set(thenProp, thenRef);
     }
 
     public Optional<ObjectNode> toDefinition(Supplier<ObjectNode> std) {

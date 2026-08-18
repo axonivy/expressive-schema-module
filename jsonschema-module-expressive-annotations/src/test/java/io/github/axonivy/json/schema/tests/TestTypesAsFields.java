@@ -9,12 +9,11 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.annotations.TypesAsFields;
 import io.github.axonivy.json.schema.annotations.TypesAsFields.FieldRegistry;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestTypesAsFields {
 
@@ -25,14 +24,14 @@ class TestTypesAsFields {
 
     JsonNode props = defs.get(Collection.class.getSimpleName()).get("properties");
     assertThat(namesOf(props))
-      .containsExactly("Another", "Container", "Specific");
+        .containsExactly("Another", "Container", "Specific");
 
-    assertThat(props.get("Another").get("$ref").asText())
-      .isEqualTo("#/$defs/Another");
+    assertThat(props.get("Another").get("$ref").asString())
+        .isEqualTo("#/$defs/Another");
 
     JsonNode another = defs.get("Another").get("properties");
     assertThat(namesOf(another))
-      .contains("common", "version");
+        .contains("common", "version");
   }
 
   static class MyRootType {
@@ -40,7 +39,7 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory.class)
-  public static interface Collection extends Map<String, Generic> { }
+  public interface Collection extends Map<String, Generic> {}
 
   public static class LocalFactory implements FieldRegistry {
     @Override
@@ -56,7 +55,7 @@ class TestTypesAsFields {
 
     JsonNode props = defs.get(CollectionCustomFieldNames.class.getSimpleName()).get("properties");
     assertThat(namesOf(props))
-      .containsExactly("Another", "Container", "specialName");
+        .containsExactly("Another", "Container", "specialName");
   }
 
   static class MyRootType2 {
@@ -64,7 +63,7 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory2.class)
-  public static interface CollectionCustomFieldNames extends Map<String, Generic> { }
+  public interface CollectionCustomFieldNames extends Map<String, Generic> {}
 
   public static class LocalFactory2 implements FieldRegistry {
     @Override
@@ -88,11 +87,11 @@ class TestTypesAsFields {
 
     JsonNode props = defs.get(CollectionOnBase.class.getSimpleName()).get("properties");
     assertThat(namesOf(props))
-      .containsExactly("Another", "Container", "Specific");
+        .containsExactly("Another", "Container", "Specific");
 
-    assertThat(props.get("Another").get("$ref").asText())
-      .as("ref to common base")
-      .isEqualTo("#/$defs/Base");
+    assertThat(props.get("Another").get("$ref").asString())
+        .as("ref to common base")
+        .isEqualTo("#/$defs/Base");
   }
 
   static class MyRootType3 {
@@ -100,7 +99,7 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory3.class)
-  public static interface CollectionOnBase extends Map<String, Generic> { }
+  public interface CollectionOnBase extends Map<String, Generic> {}
 
   public static class LocalFactory3 implements FieldRegistry {
     @Override
@@ -121,13 +120,13 @@ class TestTypesAsFields {
 
     JsonNode props = defs.get(DescribedCollection.class.getSimpleName()).get("properties");
     assertThat(namesOf(props))
-      .containsExactly("Another", "Container", "Specific");
+        .containsExactly("Another", "Container", "Specific");
 
     JsonNode another = props.get("Another");
     assertThat(namesOf(another))
-      .containsOnly("$ref", "description");
-    assertThat(another.get("description").asText())
-      .isEqualTo("Lorem ipsum");
+        .containsOnly("$ref", "description");
+    assertThat(another.get("description").asString())
+        .isEqualTo("Lorem ipsum");
   }
 
   static class MyRootType4 {
@@ -135,7 +134,7 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory4.class)
-  public static interface DescribedCollection extends Map<String, Generic> { }
+  public interface DescribedCollection extends Map<String, Generic> {}
 
   public static class LocalFactory4 implements FieldRegistry {
     @Override
@@ -152,14 +151,11 @@ class TestTypesAsFields {
     }
   }
 
-
   static List<String> namesOf(JsonNode defs) {
-    var names = new ArrayList<String>();
-    defs.fieldNames().forEachRemaining(names::add);
-    return names;
+    return new ArrayList<>(defs.propertyNames());
   }
 
-  public static interface Generic {
+  public interface Generic {
     String id();
   }
 
@@ -183,6 +179,5 @@ class TestTypesAsFields {
   public static class Container extends Base implements Generic {
     public Generic child;
   }
-
 
 }

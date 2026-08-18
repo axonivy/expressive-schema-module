@@ -5,10 +5,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.fasterxml.classmate.ResolvedType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
@@ -16,6 +12,11 @@ import com.github.victools.jsonschema.generator.SchemaKeyword;
 
 import io.github.axonivy.json.schema.annotations.PropertiesProvider;
 import io.github.axonivy.json.schema.annotations.PropertyContributor;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public class CustomPropertiesProvider implements CustomDefinitionProviderV2 {
 
@@ -72,7 +73,7 @@ public class CustomPropertiesProvider implements CustomDefinitionProviderV2 {
 
   private static JsonNode typeIt(Object object1) {
     if (object1 instanceof String text) {
-      return JsonNodeFactory.instance.textNode(text);
+      return JsonNodeFactory.instance.stringNode(text);
     }
     if (object1 instanceof Integer num) {
       return JsonNodeFactory.instance.numberNode(num);

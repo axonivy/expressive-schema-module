@@ -9,13 +9,13 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class TestImplementationTypes {
 
@@ -27,11 +27,10 @@ class TestImplementationTypes {
     System.out.println(schema.toPrettyString());
 
     assertThat(namesOf(defs))
-      .as("sub-types are known and specified in the json-schema")
-      .contains(
-        Specific.class.getSimpleName(),
-        Another.class.getSimpleName()
-      );
+        .as("sub-types are known and specified in the json-schema")
+        .contains(
+            Specific.class.getSimpleName(),
+            Another.class.getSimpleName());
   }
 
   @Test
@@ -39,34 +38,32 @@ class TestImplementationTypes {
     var props = defs.get(Generic.class.getSimpleName()).get("properties");
     var propNames = namesOf(props);
     assertThat(propNames)
-      .as("virtual properties injected by using the AllImplementations annotation")
-      .contains("type", "config");
+        .as("virtual properties injected by using the AllImplementations annotation")
+        .contains("type", "config");
 
     var types = props.get("type").get("enum");
     assertThat(types).isInstanceOf(ArrayNode.class);
 
-    var values = new ArrayList<JsonNode>();
-    types.elements().forEachRemaining(values::add);
+    var values = new ArrayList<>(types.values());
     assertThat(values)
-      .extracting(JsonNode::asText)
-      .contains(
-        Another.class.getSimpleName(),
-        Specific.class.getSimpleName()
-      );
+        .extracting(JsonNode::asString)
+        .contains(
+            Another.class.getSimpleName(),
+            Specific.class.getSimpleName());
   }
 
   @Test
   void subTypes_baseProps() {
     var genericProps = defs.get(Generic.class.getSimpleName()).get("properties");
     assertThat(namesOf(genericProps))
-      .as("enriched with properties from a 'base' type")
-      .contains("common");
+        .as("enriched with properties from a 'base' type")
+        .contains("common");
 
     var specificProps = defs.get(Specific.class.getSimpleName()).get("properties");
     assertThat(namesOf(specificProps))
-      .as("does not restate common 'base' properties")
-      .doesNotContain("common")
-      .contains("customName");
+        .as("does not restate common 'base' properties")
+        .doesNotContain("common")
+        .contains("customName");
   }
 
   @Test
@@ -76,12 +73,11 @@ class TestImplementationTypes {
     assertThat(types).isInstanceOf(ArrayNode.class);
 
     assertThat(nodesOf(types))
-      .extracting(JsonNode::asText)
-      .containsExactly(
-        Another.class.getSimpleName(),
-        Container.class.getSimpleName(),
-        Specific.class.getSimpleName()
-      );
+        .extracting(JsonNode::asString)
+        .containsExactly(
+            Another.class.getSimpleName(),
+            Container.class.getSimpleName(),
+            Specific.class.getSimpleName());
   }
 
   @Test
@@ -89,27 +85,27 @@ class TestImplementationTypes {
     var generic = defs.get(Generic.class.getSimpleName());
     var allOf = nodesOf(generic.get("allOf"));
     assertThat(allOf)
-      .extracting(JsonNode::toPrettyString)
-      .contains("""
-        {
-          "if" : {
-            "properties" : {
-              "type" : {
-                "const" : "Specific"
+        .extracting(JsonNode::toPrettyString)
+        .contains("""
+          {
+            "if" : {
+              "properties" : {
+                "type" : {
+                  "const" : "Specific"
+                }
+              }
+            },
+            "then" : {
+              "properties" : {
+                "config" : {
+                  "$ref" : "#/$defs/Specific"
+                }
               }
             }
-          },
-          "then" : {
-            "properties" : {
-              "config" : {
-                "$ref" : "#/$defs/Specific"
-              }
-            }
-          }
-        }""");
-    assertThat(allOf).extracting(n -> n.get("if").get("properties").get("type").get("const").asText())
-      .as("alphabetical order for constant generator results")
-      .containsExactly("Another", "Container", "Specific");
+          }""");
+    assertThat(allOf).extracting(n -> n.get("if").get("properties").get("type").get("const").asString())
+        .as("alphabetical order for constant generator results")
+        .containsExactly("Another", "Container", "Specific");
   }
 
   @Test
@@ -120,16 +116,15 @@ class TestImplementationTypes {
     var generic = unconditional.get("$defs").get(Generic.class.getSimpleName());
     var subTypes = generic.get("properties").get("config");
     assertThat(namesOf(subTypes))
-      .as("generic anyOf refs are better supported on some schema consumers: e.g json-schema-to-typescript generator")
-      .containsOnly("anyOf");
+        .as("generic anyOf refs are better supported on some schema consumers: e.g json-schema-to-typescript generator")
+        .containsOnly("anyOf");
     var anyOf = subTypes.get("anyOf");
     assertThat(nodesOf(anyOf))
-      .extracting(n -> n.get("$ref").asText())
-      .containsExactly(
-        "#/$defs/Another",
-        "#/$defs/Container",
-        "#/$defs/Specific"
-      );
+        .extracting(n -> n.get("$ref").asString())
+        .containsExactly(
+            "#/$defs/Another",
+            "#/$defs/Container",
+            "#/$defs/Specific");
   }
 
   static class MyRootTypeNoContainer {
@@ -137,7 +132,7 @@ class TestImplementationTypes {
   }
 
   @Implementations(value = LocalFactory.class, container = "")
-  public static interface GenericNoContainer {
+  public interface GenericNoContainer {
     String idX();
   }
 
@@ -149,21 +144,16 @@ class TestImplementationTypes {
     var generic = unconditional.get("$defs").get(GenericNoContainer.class.getSimpleName());
     var props = generic.get("properties");
     assertThat(namesOf(props))
-      .as("empty 'container' name omits its declaration: this allows custom property rules to reflect children")
-      .doesNotContain("config", "");
+        .as("empty 'container' name omits its declaration: this allows custom property rules to reflect children")
+        .doesNotContain("config", "");
   }
 
-
   static List<String> namesOf(JsonNode defs) {
-    var names = new ArrayList<String>();
-    defs.fieldNames().forEachRemaining(names::add);
-    return names;
+    return new ArrayList<>(defs.propertyNames());
   }
 
   static List<JsonNode> nodesOf(JsonNode types) {
-    var values = new ArrayList<JsonNode>();
-    types.elements().forEachRemaining(values::add);
-    return values;
+    return new ArrayList<>(types.values());
   }
 
   static class MyRootType {
@@ -171,7 +161,7 @@ class TestImplementationTypes {
   }
 
   @Implementations(LocalFactory.class)
-  public static interface Generic {
+  public interface Generic {
     String id();
   }
 
