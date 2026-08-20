@@ -132,6 +132,7 @@
             <configuration>
               <publishingServerId>central</publishingServerId>
               <autoPublish>true</autoPublish>
+              <waitMaxTime>7200</waitMaxTime><!-- 2h: default of 1800 leads to timeout -->
               <waitUntil>published</waitUntil>
             </configuration>
           </plugin>
