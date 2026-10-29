@@ -2,11 +2,17 @@ package io.github.axonivy.json.schema.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.classmate.Annotations;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.ResolvedTypeWithMembers;
@@ -47,15 +53,24 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
 
   private void annotate(ConditionBuilder builder, ResolvedField field, SchemaGenerationContext context) {
     Annotations annotations = field.getAnnotations();
+    JsonProperty jsonProperty = annotations.get(JsonProperty.class);
+    String defaultValue = jsonProperty == null || jsonProperty.defaultValue().isEmpty()
+        ? null
+        : jsonProperty.defaultValue();
 
-    Consumer<Condition> add = condition -> builder.addCondition(condition, field.getName());
-    Condition condition = field.get(Condition.class);
-    if (condition != null) {
-      add.accept(condition);
-    }
-    Condition.List conditions = annotations.get(Condition.List.class);
-    if (conditions != null) {
-      Arrays.stream(conditions.value()).forEachOrdered(add);
+    var fieldConditions = readConditions(field, annotations);
+    if (!fieldConditions.isEmpty()) {
+      Map<String, List<Condition>> conditionsByProperty = new LinkedHashMap<>();
+      for (Condition fieldCondition : fieldConditions) {
+        conditionsByProperty.computeIfAbsent(fieldCondition.thenProperty(), ignored -> new ArrayList<>())
+            .add(fieldCondition);
+      }
+      conditionsByProperty.forEach((thenProperty, propertyConditions) -> {
+        var rule = builder.field(field.getName(), thenProperty, defaultValue);
+        propertyConditions.forEach(valueCondition ->
+            rule.whenValue(valueCondition.ifConst(), valueCondition.thenRef()));
+        rule.add();
+      });
     }
 
     Consumer<Conditional> addConditional = c -> builder.addConditional(c, field,
@@ -70,10 +85,25 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
     }
   }
 
+  private static List<Condition> readConditions(ResolvedField field, Annotations annotations) {
+    List<Condition> fieldConditions = new ArrayList<>();
+    Condition condition = field.get(Condition.class);
+    if (condition != null) {
+      fieldConditions.add(condition);
+    }
+    var conditions = annotations.get(Condition.List.class);
+    if (conditions != null) {
+      fieldConditions.addAll(Arrays.asList(conditions.value()));
+    }
+    return fieldConditions;
+  }
+
   public static class ConditionBuilder {
 
     private final SchemaVersion version;
     private final List<ObjectNode> conditions = new ArrayList<>();
+    private final Map<String, List<ObjectNode>> conditionsByField = new HashMap<>();
+    private final Set<String> fieldsWithFallback = new HashSet<>();
     private DynamicRefs refs = new DynamicRefs();
 
     public ConditionBuilder(SchemaGenerationContext context) {
@@ -85,51 +115,141 @@ public class ConditionalFieldProvider implements CustomDefinitionProviderV2 {
       return this;
     }
 
-    public ObjectNode addCondition(Condition condition, String field) {
-      var resovled = refs.resolve(condition.thenRef());
-      var ref = JsonNodeFactory.instance.objectNode();
-      ref.put(SchemaKeyword.TAG_REF.forVersion(version), resovled);
-      return addCondition(field, condition.ifConst(), condition.thenProperty(), ref);
+    public FieldBuilder field(String name, String thenProperty) {
+      return new FieldBuilder(name, thenProperty, null);
+    }
+
+    public FieldBuilder field(String name, String thenProperty, String defaultValue) {
+      return new FieldBuilder(name, thenProperty, defaultValue);
     }
 
     public ObjectNode addConditional(Conditional condition, ResolvedField field, Supplier<ObjectNode> reference) {
-      return addCondition(condition.ifProperty(), condition.hasConst(), field.getName(), reference.get());
+      return append(field(condition.ifProperty(), field.getName())
+          .whenValue(condition.hasConst(), reference.get()));
     }
 
-    public ObjectNode addCondition(String field, String expect, String thenProp, JsonNode thenRef) {
-      return addCondition(field, new String[] {expect}, thenProp, thenRef);
+    private ObjectNode append(FieldBuilder rule) {
+      ObjectNode first = null;
+      for (ValueCondition valueCondition : rule.valueConditions) {
+        var target = JsonNodeFactory.instance.objectNode();
+        ifProperty(rule.name, valueCondition.expectedValues, target);
+        thenProperty(rule.thenProperty, valueCondition.schema, target);
+        conditions.add(target);
+        ObjectNode ifCondition = (ObjectNode) target.get(SchemaKeyword.TAG_IF.forVersion(version));
+        if (fieldsWithFallback.contains(rule.name)) {
+          requireField(ifCondition, rule.name);
+        }
+        List<ObjectNode> fieldConditions = conditionsByField.computeIfAbsent(rule.name, ignored -> new ArrayList<>());
+        fieldConditions.add(ifCondition);
+        if (rule.defaultValue != null && valueCondition.expectedValues.contains(rule.defaultValue)) {
+          if (fieldsWithFallback.add(rule.name)) {
+            fieldConditions.forEach(ifSchema -> requireField(ifSchema, rule.name));
+          }
+          addMissingCondition(rule.name, rule.thenProperty, valueCondition.schema);
+        }
+        if (first == null) {
+          first = target;
+        }
+      }
+      return first;
     }
 
-    public ObjectNode addCondition(String field, String[] expect, String thenProp, JsonNode thenRef) {
+    private ObjectNode reference(String path) {
+      var ref = JsonNodeFactory.instance.objectNode();
+      ref.put(SchemaKeyword.TAG_REF.forVersion(version), refs.resolve(path));
+      return ref;
+    }
+
+    private ObjectNode addMissingCondition(String field, String property, JsonNode fallbackSchema) {
       var target = JsonNodeFactory.instance.objectNode();
-      ifProperty(field, expect, target);
-      thenProperty(thenProp, thenRef, target);
+      target
+          .putObject(SchemaKeyword.TAG_IF.forVersion(version))
+          .putObject(SchemaKeyword.TAG_NOT.forVersion(version))
+          .putArray(SchemaKeyword.TAG_REQUIRED.forVersion(version))
+          .add(field);
+      thenProperty(property, fallbackSchema, target);
       conditions.add(target);
       return target;
     }
 
-    private void ifProperty(String field, String[] expect, ObjectNode target) {
-      var ifProperty = target
-          .putObject(SchemaKeyword.TAG_IF.forVersion(version))
-          .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
-          .putObject(field);
-
-      String constTag = SchemaKeyword.TAG_CONST.forVersion(version);
-      if (expect.length == 1) {
-        ifProperty.put(constTag, expect[0]);
-        return;
-      }
-      var anyOf = ifProperty.putArray(SchemaKeyword.TAG_ANYOF.forVersion(version));
-      for (String exp : expect) {
-        anyOf.addObject().put(constTag, exp);
+    private void requireField(ObjectNode ifCondition, String field) {
+      String propertiesTag = SchemaKeyword.TAG_PROPERTIES.forVersion(version);
+      JsonNode properties = ifCondition.remove(propertiesTag);
+      ifCondition.putArray(SchemaKeyword.TAG_REQUIRED.forVersion(version)).add(field);
+      if (properties != null) {
+        ifCondition.set(propertiesTag, properties);
       }
     }
 
-    private void thenProperty(String thenProp, JsonNode thenRef, ObjectNode target) {
+    private void ifProperty(String name, List<String> expectedValues, ObjectNode target) {
+      var ifCondition = target.putObject(SchemaKeyword.TAG_IF.forVersion(version));
+      var ifProperty = ifCondition
+          .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
+          .putObject(name);
+
+      String constTag = SchemaKeyword.TAG_CONST.forVersion(version);
+      if (expectedValues.size() == 1) {
+        ifProperty.put(constTag, expectedValues.get(0));
+        return;
+      }
+      var anyOf = ifProperty.putArray(SchemaKeyword.TAG_ANYOF.forVersion(version));
+      for (String expectedValue : expectedValues) {
+        anyOf.addObject().put(constTag, expectedValue);
+      }
+    }
+
+    private void thenProperty(String property, JsonNode schema, ObjectNode target) {
       target
           .putObject(SchemaKeyword.TAG_THEN.forVersion(version))
           .putObject(SchemaKeyword.TAG_PROPERTIES.forVersion(version))
-          .set(thenProp, thenRef);
+          .set(property, schema);
+    }
+
+    public final class FieldBuilder {
+
+      private final String name;
+      private final String thenProperty;
+      private final String defaultValue;
+      private final List<ValueCondition> valueConditions = new ArrayList<>();
+
+      private FieldBuilder(String name, String thenProperty, String defaultValue) {
+        this.name = name;
+        this.thenProperty = thenProperty;
+        this.defaultValue = defaultValue;
+      }
+
+      public FieldBuilder whenValue(String expectedValue, String reference) {
+        return whenValue(new String[] {expectedValue}, reference);
+      }
+
+      public FieldBuilder whenValue(String expectedValue, JsonNode schema) {
+        return whenValue(new String[] {expectedValue}, schema);
+      }
+
+      public FieldBuilder whenValue(String[] expectedValues, String reference) {
+        return whenValue(expectedValues, ConditionBuilder.this.reference(reference));
+      }
+
+      public FieldBuilder whenValue(String[] expectedValues, JsonNode schema) {
+        valueConditions.add(new ValueCondition(Arrays.asList(expectedValues), schema));
+        return this;
+      }
+
+      public ConditionBuilder add() {
+        ConditionBuilder.this.append(this);
+        return ConditionBuilder.this;
+      }
+    }
+
+    private static class ValueCondition {
+
+      private final List<String> expectedValues;
+      private final JsonNode schema;
+
+      private ValueCondition(List<String> expectedValues, JsonNode schema) {
+        this.expectedValues = expectedValues;
+        this.schema = schema;
+      }
     }
 
     public Optional<ObjectNode> toDefinition(Supplier<ObjectNode> std) {
