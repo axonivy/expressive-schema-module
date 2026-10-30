@@ -24,7 +24,7 @@ public @interface Condition {
   public String[] ifConst();
 
   /**
-   * @return the 'name' of a property to be inserted, if the condition is met
+   * @return the 'name' of a property to be inserted, if the condition is met.
    */
   public String thenProperty();
 

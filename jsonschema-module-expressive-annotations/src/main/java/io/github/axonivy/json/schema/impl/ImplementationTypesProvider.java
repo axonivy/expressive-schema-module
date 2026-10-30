@@ -30,7 +30,6 @@ import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
 import io.github.axonivy.json.schema.impl.ConditionalFieldProvider.ConditionBuilder;
 
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -76,6 +75,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
 
   private CustomDefinition supplyVirtualContainer(ResolvedType type, SchemaGenerationContext context, Implementations impls) {
     TypeReqistry registry = create(impls.value());
+    Class<?> defaultType = validateDefaultType(registry);
     var base = Optional.ofNullable(registry.base())
         .map(context.getTypeContext()::resolve)
         .orElse(type);
@@ -84,7 +84,11 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     Set<Class<?>> subTypes = registry.types();
     var props = propertiesOf(context, std);
     storeCommonProps(subTypes, props);
-    props.set(impls.type(), craftTypeConsts(context, registry));
+    ObjectNode typeProperty = craftTypeConsts(context, registry);
+    if (defaultType != null) {
+      typeProperty.put(context.getKeyword(SchemaKeyword.TAG_DEFAULT), registry.typeName(defaultType));
+    }
+    props.set(impls.type(), typeProperty);
 
     String containerName = impls.container();
     if (!containerName.isBlank()) {
@@ -99,10 +103,18 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     if (!conditional) {
       return new CustomDefinition(std, false);
     }
-    return conditional(context, impls, registry)
+    return conditional(context, impls, registry, defaultType)
         .toDefinition(() -> std)
         .map(node -> new CustomDefinition(node, false))
         .orElse(null);
+  }
+
+  private Class<?> validateDefaultType(TypeReqistry registry) {
+    Class<?> defaultType = registry.defaultType();
+    if (defaultType != null && !registry.types().contains(defaultType)) {
+      throw new IllegalArgumentException("defaultType '" + defaultType.getName() + "' is not defined by the type registry.");
+    }
+    return defaultType;
   }
 
   private void storeCommonProps(Set<Class<?>> subTypes, ObjectNode props) {
@@ -122,15 +134,20 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     return std.putObject(propertiesTag);
   }
 
-  private ConditionBuilder conditional(SchemaGenerationContext context, Implementations impls, TypeReqistry registry) {
+  private ConditionBuilder conditional(SchemaGenerationContext context, Implementations impls, TypeReqistry registry,
+      Class<?> defaultType) {
     var builder = new ConditionBuilder(context);
+    var field = builder.field(impls.type(), impls.container(),
+        defaultType == null ? null : registry.typeName(defaultType));
     registry.types().stream()
         .sorted(SIMPLE_NAME_SORTED)
         .forEachOrdered(subType -> {
           var resolved = context.getTypeContext().resolve(subType);
           ObjectNode reference = context.createStandardDefinitionReference(resolved, null);
-          builder.addCondition(impls.type(), registry.typeName(subType), impls.container(), reference);
+          String typeName = registry.typeName(subType);
+          field.whenValue(typeName, reference);
         });
+    field.add();
     return builder;
   }
 
@@ -143,7 +160,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     }
   }
 
-  private JsonNode craftTypeConsts(SchemaGenerationContext context, TypeReqistry registry) {
+  private ObjectNode craftTypeConsts(SchemaGenerationContext context, TypeReqistry registry) {
     var described = registry.types().stream()
         .collect(Collectors.toMap(
             type -> registry.typeName(type),

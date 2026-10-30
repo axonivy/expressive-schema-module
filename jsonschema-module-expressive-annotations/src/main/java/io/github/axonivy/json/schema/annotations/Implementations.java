@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
 
 
 /**
@@ -29,6 +30,14 @@ public @interface Implementations {
 
     default Class<?> base() {
       return null; // no common properties on impls
+    }
+
+    /**
+      * A fallback type to enact when the 'type' is absent from the JSON.
+      * Only has impact when {@link ExpressiveSchemaOption#PREFER_CONDITIONAL_SUBTYPES} is enabled.
+     */
+    default Class<?> defaultType() {
+      return null;
     }
 
     default String typeName(Class<?> type) {

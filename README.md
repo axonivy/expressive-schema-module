@@ -86,6 +86,16 @@ Note that multiple conditions can be combined by using many instances of `@Condi
 public String provider;
 ```
 
+When a condition's constant matches the property's Jackson `defaultValue`, that condition also applies when the property is absent:
+
+```java
+@JsonProperty(defaultValue = "local")
+@Condition(ifConst = "local", thenProperty = "config", thenRef = "/ivy/local-config.json")
+@Condition(ifConst = "s3", thenProperty = "config", thenRef = "/ivy/s3-config.json")
+public String provider;
+```
+
+This adds a missing-field condition using the same `thenProperty` and `thenRef`. It matches an absent property only; an explicit `null` is not considered missing.
 
 
 ### @Implementations
@@ -93,7 +103,7 @@ public String provider;
 Adds implementations of a generic type into the schema. It will use a virtual type and value properties in order to provide strict schema support, despite the generic class design.
 
 ```java
-@Implementations(ComponentTypes)
+@Implementations(ComponentTypes.class)
 public Component component;
 
 public static class ComponentTypes implements TypeReqistry {

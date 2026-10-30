@@ -1,6 +1,7 @@
 package io.github.axonivy.json.schema.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -84,11 +85,13 @@ class TestImplementationTypes {
   void subTypes_allOfCondition() {
     var generic = defs.get(Generic.class.getSimpleName());
     var allOf = nodesOf(generic.get("allOf"));
+    assertThat(allOf).hasSize(4);
     assertThat(allOf)
         .extracting(JsonNode::toPrettyString)
         .contains("""
           {
             "if" : {
+              "required" : [ "type" ],
               "properties" : {
                 "type" : {
                   "const" : "Specific"
@@ -103,9 +106,17 @@ class TestImplementationTypes {
               }
             }
           }""");
-    assertThat(allOf).extracting(n -> n.get("if").get("properties").get("type").get("const").asString())
+    assertThat(allOf.subList(0, 3))
+      .extracting(n -> n.get("if").get("properties").get("type").get("const").asString())
         .as("alphabetical order for constant generator results")
         .containsExactly("Another", "Container", "Specific");
+    assertThat(allOf.subList(0, 3))
+        .allSatisfy(condition -> assertThat(condition.get("if").get("required").get(0).asString())
+            .isEqualTo("type"));
+    JsonNode missingType = allOf.get(3);
+    assertThat(missingType.get("if").get("not").get("required").get(0).asString()).isEqualTo("type");
+    assertThat(missingType.get("then").get("properties").get("config").get("$ref").asString())
+      .isEqualTo("#/$defs/Specific");
   }
 
   @Test
@@ -113,6 +124,8 @@ class TestImplementationTypes {
     var unconditional = new ExpressiveSchemaGenerator(EnumSet.noneOf(ExpressiveSchemaOption.class)).generateSchema(MyRootType.class);
 
     var generic = unconditional.get("$defs").get(Generic.class.getSimpleName());
+    assertThat(generic.get("properties").get("type").get("default").asString())
+      .isEqualTo("Specific");
     var subTypes = generic.get("properties").get("config");
     assertThat(namesOf(subTypes))
         .as("generic anyOf refs are better supported on some schema consumers: e.g json-schema-to-typescript generator")
@@ -124,6 +137,34 @@ class TestImplementationTypes {
             "#/$defs/Another",
             "#/$defs/Container",
             "#/$defs/Specific");
+  }
+
+  @Test
+  void invalidDefaultType_isValidatedWithoutConditionalSubtypes() {
+    var generator = new ExpressiveSchemaGenerator(EnumSet.noneOf(ExpressiveSchemaOption.class));
+
+    assertThatThrownBy(() -> generator.generateSchema(InvalidDefaultRoot.class))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("defaultType");
+  }
+
+  static class InvalidDefaultRoot {
+    public InvalidDefaultGeneric provider;
+  }
+
+  @Implementations(InvalidDefaultFactory.class)
+  interface InvalidDefaultGeneric {}
+
+  public static class InvalidDefaultFactory implements TypeReqistry {
+    @Override
+    public Class<?> defaultType() {
+      return String.class;
+    }
+
+    @Override
+    public Set<Class<?>> types() {
+      return Set.of(Specific.class);
+    }
   }
 
   static class MyRootTypeNoContainer {
@@ -186,6 +227,11 @@ class TestImplementationTypes {
   }
 
   public static class LocalFactory implements TypeReqistry {
+    @Override
+    public Class<?> defaultType() {
+      return Specific.class;
+    }
+
     @Override
     public Set<Class<?>> types() {
       return Set.of(Specific.class, Another.class, Container.class);

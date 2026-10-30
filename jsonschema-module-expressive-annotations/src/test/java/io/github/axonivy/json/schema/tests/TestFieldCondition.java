@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.github.axonivy.json.schema.annotations.Condition;
 import io.github.axonivy.json.schema.annotations.Conditional;
 
@@ -24,6 +26,7 @@ class TestFieldCondition {
     JsonNode ifConst = schema.get("if").get("properties").get("provider").get("const");
     assertThat(ifConst.asString())
         .isEqualTo("azure-idp");
+    assertThat(schema.get("if").get("required")).isNull();
 
     var then = schema.get("then").get("properties").get("config").get("$ref");
     assertThat(then.asString())
@@ -57,6 +60,59 @@ class TestFieldCondition {
     @Condition(ifConst = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
     @Condition(ifConst = "ms-ad", thenProperty = "config", thenRef = "/ivy/ldap-config.json")
     public String provider;
+  }
+
+  @Test
+  void repeatedConditionsCanTargetDifferentProperties() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyDifferentTargetProperties.class);
+
+    var allOf = (ArrayNode) schema.get("allOf");
+    assertThat(allOf).hasSize(3);
+    assertThat(allOf.get(0).get("then").get("properties").get("config").get("$ref").asString())
+        .isEqualTo("/ivy/azure-config.json");
+    assertThat(allOf.get(1).get("if").get("not").get("required").get(0).asString())
+        .isEqualTo("provider");
+    assertThat(allOf.get(1).get("then").get("properties").get("config").get("$ref").asString())
+        .isEqualTo("/ivy/azure-config.json");
+    assertThat(allOf.get(2).get("then").get("properties").get("settings").get("$ref").asString())
+        .isEqualTo("/ivy/ldap-config.json");
+  }
+
+  static class MyDifferentTargetProperties {
+    @JsonProperty(defaultValue = "azure-idp")
+    @Condition(ifConst = "azure-idp", thenProperty = "config", thenRef = "/ivy/azure-config.json")
+    @Condition(ifConst = "ms-ad", thenProperty = "settings", thenRef = "/ivy/ldap-config.json")
+    public String provider;
+  }
+
+  @Test
+  void missingProperty_fallsBackToDefaultCondition() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyMissingCondition.class);
+
+    var allOf = (ArrayNode) schema.get("allOf");
+    assertThat(allOf).hasSize(3);
+
+    JsonNode local = allOf.get(0);
+    assertThat(local.get("if").get("required").get(0).asString()).isEqualTo("Name");
+    assertThat(local.get("if").get("properties").get("Name").get("const").asString()).isEqualTo("local");
+    assertThat(local.get("then").get("properties").get("Config").get("$ref").asString())
+        .isEqualTo("/ivy/blob-storage-local.json");
+
+    JsonNode missingName = allOf.get(1);
+    assertThat(missingName.get("if").get("not").get("required").get(0).asString()).isEqualTo("Name");
+    assertThat(missingName.get("then").get("properties").get("Config").get("$ref").asString())
+      .isEqualTo("/ivy/blob-storage-local.json");
+
+    JsonNode s3 = allOf.get(2);
+    assertThat(s3.get("if").get("required").get(0).asString()).isEqualTo("Name");
+    assertThat(s3.get("if").get("properties").get("Name").get("const").asString()).isEqualTo("s3");
+  }
+
+  static class MyMissingCondition {
+    @JsonProperty(defaultValue = "local")
+    @Condition(ifConst = "local", thenProperty = "Config", thenRef = "/ivy/blob-storage-local.json")
+    @Condition(ifConst = "s3", thenProperty = "Config", thenRef = "/ivy/blob-storage-s3.json")
+    public String Name;
   }
 
   @Test
