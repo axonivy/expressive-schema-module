@@ -111,7 +111,6 @@ class TestImplementationTypes {
   @Test
   void subTypes_anyOf_unconditional() {
     var unconditional = new ExpressiveSchemaGenerator(EnumSet.noneOf(ExpressiveSchemaOption.class)).generateSchema(MyRootType.class);
-    System.out.println(unconditional.toPrettyString());
 
     var generic = unconditional.get("$defs").get(Generic.class.getSimpleName());
     var subTypes = generic.get("properties").get("config");
