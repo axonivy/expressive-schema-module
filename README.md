@@ -138,6 +138,35 @@ Will generate a schema as follows:
 }
 ```
 
+The TypeRegistry output can be customized to omit `if/then` statements in favour of `anyOf` variants. This is helpful for codegen clients that can not handle the more complex `allOf` conditional block. Omit the `ExpressiveSchemaOption.PREFER_CONDITIONAL_SUBTYPES` to opt-in to `anyOf` mode.
+
+Example:
+
+```json
+"Generic" : {
+  "type" : "object",
+  "properties" : {
+    "common" : {
+      "type" : "string"
+    },
+    "type" : {
+      "type" : "string",
+      "enum" : [ "Another", "Container", "Specific" ]
+    },
+    "config" : {
+      "anyOf" : [ {
+        "$ref" : "#/$defs/Another"
+      }, {
+        "$ref" : "#/$defs/Container"
+      }, {
+        "$ref" : "#/$defs/Specific"
+      } ]
+    }
+  }
+}
+```
+
+
 ### @TypesAsFields
 
 Adds implementations of a generic type to explicit field references. 
@@ -294,6 +323,7 @@ The module comes with a few opt-in schema features. See the `ExpressiveSchemaOpt
 - `USE_ADDITIONAL_PROPERTIES_ANNOTATION`: disables any properties, unless you actually allow them by using the `@AdditionalProperties` annotation.
 - `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE`: contributes default values to the jsonschema by using Jacksons `@JsonPropert(defaultValue="myDefault")` annotation for the task.
 - `USE_SCHEMA_SUFFIX_NAMING_STRATEGY`: provides a naming strategy that cleans your types from 'Schema' suffixes. We use this for object models that were invented just for the sake of documenting jsonschema features. So we added 'Schema' postfixes to make them distinguable from real productive objects. In the generated schema however, these long names are removed.
+- `PREFER_CONDITIONAL_SUBTYPES`: for `@Implementations`, emits `if`/`then` conditionals to select the config schema based on the `type` property. Without this option, the config property uses `anyOf` to list the implementation schemas, which is better supported by some consumers such as json-schema-to-typescript.
 
 ### Examples
 
