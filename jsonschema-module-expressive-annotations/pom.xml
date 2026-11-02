@@ -11,10 +11,22 @@
   <name>jsonschema expressive annotations module</name>
   <description>Simple annotations to provide json-schema hints right on your object models</description>
   <url>https://github.com/axonivy/expressive-schema-module</url>
+  <organization>
+    <name>AXON Ivy AG</name>
+    <url>https://www.axonivy.com</url>
+  </organization>
+  <developers>
+    <developer>
+      <name>Reguël Wermelinger</name>
+      <email>reguel.wermelinger@axonivy.com</email>
+      <organization>AXON Ivy AG</organization>
+      <organizationUrl>https://www.axonivy.com</organizationUrl>
+    </developer>
+  </developers>
   <scm>
-    <connection>scm:git:git://github.com/axonivy/expressive-schema-module.git</connection>
-    <developerConnection>scm:git:ssh://github.com:axonivy/expressive-schema-module.git</developerConnection>
-    <url>http://github.com/axonivy/expressive-schema-module</url>
+    <url>https://github.com/axonivy/expressive-schema-module</url>
+    <connection>scm:git:https://github.com/axonivy/expressive-schema-module.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/axonivy/expressive-schema-module.git</developerConnection>
   </scm>
   <issueManagement>
     <system>github</system>
@@ -22,17 +34,10 @@
   </issueManagement>
   <licenses>
     <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
-  <developers>
-    <developer>
-      <name>Reguël Wermelinger</name>
-      <email>reguel.wermelinger@axonivy.com</email>
-      <organizationUrl>https://github.com/axonivy</organizationUrl>
-    </developer>
-  </developers>
 
   <properties>
     <java.module.name>com.axonivy.json.schema.module.expressive.annotations</java.module.name>
@@ -64,73 +69,66 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.4.0</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.12.0</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.16.0</version>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.6.0</version>
-        <configuration>
-          <testFailureIgnore>true</testFailureIgnore>
-        </configuration>
       </plugin>
     </plugins>
 
   </build>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>central.snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>central.releases</id>
+      <url>https://oss.sonatype.org/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
+
   <profiles>
     <profile>
       <id>centralDeploy</id>
-      <distributionManagement>
-        <snapshotRepository>
-          <id>central</id>
-          <name>Maven Central Snapshots Repo</name>
-          <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-          <id>central</id>
-          <name>Maven Central Releases Repo</name>
-          <url>https://oss.sonatype.org/content/repositories/releases/</url>
-        </repository>
-      </distributionManagement>
       <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>3.4.0</version>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.12.0</version>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <failOnError>false</failOnError>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
             <version>0.11.0</version>
             <extensions>true</extensions>
             <configuration>
-              <publishingServerId>central</publishingServerId>
+              <publishingServerId>central.releases</publishingServerId>
               <autoPublish>true</autoPublish>
               <waitMaxTime>7200</waitMaxTime><!-- 2h: default of 1800 leads to timeout -->
               <waitUntil>published</waitUntil>
@@ -140,9 +138,6 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
             <version>3.2.8</version>
-            <configuration>
-              <release>${maven.compiler.release}</release>
-            </configuration>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
