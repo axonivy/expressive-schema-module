@@ -1,9 +1,9 @@
 # expressive-schema-module
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.axonivy/jsonschema-module-expressive-annotations.svg?label=Maven%20Central&logo=apachemaven)](https://central.sonatype.com/artifact/io.github.axonivy/jsonschema-module-expressive-annotations/)
-[![build](https://github.com/axonivy/expressive-schema-module/actions/workflows/ci.yml/badge.svg)](https://github.com/axonivy/expressive-schema-module/actions/workflows/ci.yml)
+[![Maven Central][maven-central-badge]][maven-central-artifact]
+[![CI-Build][ci-build]][ci-build-workflow]
 
-An extension module for victools [jsonschema-generator](https://github.com/victools/jsonschema-generator). 
+An extension module for victools [jsonschema-generator][jsonschema-generator].
 We supply frequently required json-schema hints by introducing annotations, that can be directly placed onto your domain models. This with the idea in mind, to keep you programming as much java as possible, without having to dive into the jsonschema generator specifics.
 
 ## Annotations
@@ -97,7 +97,6 @@ public String provider;
 
 This adds a missing-field condition using the same `thenProperty` and `thenRef`. It matches an absent property only; an explicit `null` is not considered missing.
 
-
 ### @Implementations
 
 Adds implementations of a generic type into the schema. It will use a virtual type and value properties in order to provide strict schema support, despite the generic class design.
@@ -176,10 +175,9 @@ Example:
 }
 ```
 
-
 ### @TypesAsFields
 
-Adds implementations of a generic type to explicit field references. 
+Adds implementations of a generic type to explicit field references.
 This is perfect if you maintain a Map with well known keys in your Java objects.
 
 ```java
@@ -267,10 +265,9 @@ Will generate a schema as follows:
 }
 ```
 
-
 ### @AdditionalProperties
 
-With the `ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION` the schema only allows properties,  that are actually outlined in your object models.
+With the `ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION` the schema only allows properties, that are actually outlined in your object models.
 By adding the `@AdditionalProperties` annotation however, you can allow unspecified properties again.
 
 ```java
@@ -344,3 +341,17 @@ var configBuilder = new SchemaGeneratorConfigBuilder(VERSION, OptionPreset.PLAIN
 configBuilder.with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
 configBuilder.with(new ExpressiveSchemaModule(EnumSet.allOf(ExpressiveSchemaOption.class)));
 ```
+
+## Author
+
+Reguël Wermelinger, AXON Ivy AG
+
+## License
+
+The Apache License, Version 2.0
+
+[maven-central-badge]: https://img.shields.io/maven-central/v/io.github.axonivy/jsonschema-module-expressive-annotations.svg?label=jsonschema-module-expressive-annotations&logo=apachemaven
+[maven-central-artifact]: https://central.sonatype.com/artifact/io.github.axonivy/jsonschema-module-expressive-annotations/
+[ci-build]: https://github.com/axonivy/expressive-schema-module/actions/workflows/ci.yml/badge.svg
+[ci-build-workflow]: https://github.com/axonivy/expressive-schema-module/actions/workflows/ci.yml
+[jsonschema-generator]: https://github.com/victools/jsonschema-generator
