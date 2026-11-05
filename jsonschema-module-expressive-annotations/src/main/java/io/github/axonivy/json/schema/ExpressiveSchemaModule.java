@@ -19,6 +19,7 @@ import io.github.axonivy.json.schema.impl.CustomTypeProvider;
 import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
 import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
+import io.github.axonivy.json.schema.impl.MapKeyRestrictionProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
 import io.github.axonivy.json.schema.impl.TypesAsFieldsProvider;
 
@@ -52,6 +53,7 @@ public class ExpressiveSchemaModule implements Module {
         .withCustomDefinitionProvider(new RemoteRefProvider(refs))
         .withCustomDefinitionProvider(examples)
         .withCustomDefinitionProvider(new CustomTypeProvider())
+        .withInstanceAttributeOverride(new MapKeyRestrictionProvider())
         .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {

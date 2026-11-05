@@ -213,6 +213,31 @@ Will generate a schema as follows:
 }
 ```
 
+### Map key patterns
+
+Use Jakarta Validation's `@Pattern` on a `Map` key to constrain property names. The generated schema expresses the constraint with `propertyNames`:
+
+```java
+import java.util.Map;
+
+import jakarta.validation.constraints.Pattern;
+
+public class DatabasesSchema {
+  public Map<@Pattern(regexp = "^[A-Za-z0-9_-]+$") String, DatabaseSchema> Databases;
+}
+```
+
+The `Databases` schema includes:
+
+```json
+"Databases" : {
+  "type" : "object",
+  "propertyNames" : {
+    "pattern" : "^[A-Za-z0-9_-]+$"
+  }
+}
+```
+
 ### @PropertiesProvider
 
 Adds dynamic properties to your type definition.
