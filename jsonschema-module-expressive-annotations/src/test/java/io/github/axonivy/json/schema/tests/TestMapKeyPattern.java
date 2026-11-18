@@ -18,10 +18,10 @@ class TestMapKeyPattern {
     var schema = new ExpressiveSchemaGenerator().generateSchema(DatabasesSchema.class);
     var dbs = (ObjectNode) schema.get("properties").get("Databases");
     assertThat(dbs.propertyNames())
-      .contains("$ref", "propertyNames");
+        .contains("$ref", "propertyNames");
     assertThat(dbs.get("propertyNames")
-      .get("pattern").asString())
-      .isEqualTo("^[A-Za-z0-9_-]+$");
+        .get("pattern").asString())
+        .isEqualTo("^[A-Za-z0-9_-]+$");
   }
 
   static class DatabasesSchema {
@@ -37,10 +37,18 @@ class TestMapKeyPattern {
     var schema = new ExpressiveSchemaGenerator().generateSchema(DatabasesSchemaDelegate.class);
     var dbs = (ObjectNode) schema.get("properties").get("Databases");
     assertThat(dbs.propertyNames())
-      .contains("$ref", "propertyNames");
+        .contains("$ref", "propertyNames");
     assertThat(dbs.get("propertyNames")
-      .get("pattern").asString())
-      .isEqualTo("^[A-Za-z0-9_-]+$");
+        .get("pattern").asString())
+        .isEqualTo("^[A-Za-z0-9_-]+$");
+  }
+
+  static class DatabasesSchemaDelegate {
+    public Databases Databases;
+  }
+
+  /** MAP delegate: Hiding Generics */
+  public static class Databases extends HashMap<@Pattern(regexp = "^[A-Za-z0-9_-]+$") String, DatabaseSchema> {
   }
 
   @Test
@@ -48,25 +56,10 @@ class TestMapKeyPattern {
     var schema = new ExpressiveSchemaGenerator().generateSchema(GenericMapKeyPatternSchema.class);
     var dbs = (ObjectNode) schema.get("properties").get("Databases");
     assertThat(dbs.propertyNames())
-      .contains("$ref", "propertyNames");
+        .contains("$ref", "propertyNames");
     assertThat(dbs.get("propertyNames")
-      .get("pattern").asString())
-      .isEqualTo("^[A-Za-z0-9_-]+$");
-  }
-
-  @Test
-  void mapKeys_patternRestrictions_reorderedGenericIntermediateType() {
-    var schema = new ExpressiveSchemaGenerator().generateSchema(ReorderedMapKeyPatternSchema.class);
-    var dbs = (ObjectNode) schema.get("properties").get("Databases");
-    assertThat(dbs.propertyNames())
-      .contains("$ref", "propertyNames");
-    assertThat(dbs.get("propertyNames")
-      .get("pattern").asString())
-      .isEqualTo("^[A-Za-z0-9_-]+$");
-  }
-
-  static class DatabasesSchemaDelegate {
-    public Databases Databases;
+        .get("pattern").asString())
+        .isEqualTo("^[A-Za-z0-9_-]+$");
   }
 
   static class GenericMapKeyPatternSchema {
@@ -77,6 +70,17 @@ class TestMapKeyPattern {
   }
 
   static class KeyRestrictedDatabases extends MapBase<@Pattern(regexp = "^[A-Za-z0-9_-]+$") String, DatabaseSchema> {
+  }
+
+  @Test
+  void mapKeys_patternRestrictions_reorderedGenericIntermediateType() {
+    var schema = new ExpressiveSchemaGenerator().generateSchema(ReorderedMapKeyPatternSchema.class);
+    var dbs = (ObjectNode) schema.get("properties").get("Databases");
+    assertThat(dbs.propertyNames())
+        .contains("$ref", "propertyNames");
+    assertThat(dbs.get("propertyNames")
+        .get("pattern").asString())
+        .isEqualTo("^[A-Za-z0-9_-]+$");
   }
 
   static class ReorderedMapKeyPatternSchema {
@@ -92,7 +96,4 @@ class TestMapKeyPattern {
   static class ReorderedDatabases extends ReorderedMap<DatabaseSchema, @Pattern(regexp = "^[A-Za-z0-9_-]+$") String> {
   }
 
-  /** MAP delegate: Hiding Generics */
-  public class Databases extends HashMap<@Pattern(regexp = "^[A-Za-z0-9_-]+$") String, DatabaseSchema> {
-  }
 }
