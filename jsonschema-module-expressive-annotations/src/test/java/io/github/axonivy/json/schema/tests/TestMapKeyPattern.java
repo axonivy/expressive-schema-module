@@ -3,37 +3,25 @@ package io.github.axonivy.json.schema.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
 import jakarta.validation.constraints.Pattern;
-
-import com.github.victools.jsonschema.generator.Option;
-import com.github.victools.jsonschema.generator.OptionPreset;
-import com.github.victools.jsonschema.generator.SchemaGenerator;
-import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
-import com.github.victools.jsonschema.generator.SchemaVersion;
-
-import io.github.axonivy.json.schema.ExpressiveSchemaModule;
-
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 class TestMapKeyPattern {
 
   @Test
   void mapKeys_patternRestrictions() {
-    var configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_2019_09, OptionPreset.PLAIN_JSON);
-    configBuilder.with(Option.MAP_VALUES_AS_ADDITIONAL_PROPERTIES);
-    configBuilder.with(new ExpressiveSchemaModule());
-    var config = configBuilder.build();
-    ObjectNode schema = new SchemaGenerator(config).generateSchema(DatabasesSchema.class);
-
-    JsonNode propertyNames = schema.get("properties").get("Databases").get("propertyNames");
-    assertThat(propertyNames).isNotNull();
-    assertThat(propertyNames.get("pattern").asString())
-        .isEqualTo("^[A-Za-z0-9_-]+$");
+    var schema = new ExpressiveSchemaGenerator().generateSchema(DatabasesSchema.class);
+    var dbs = (ObjectNode) schema.get("properties").get("Databases");
+    assertThat(dbs.propertyNames())
+      .contains("$ref", "propertyNames");
+    assertThat(dbs.get("propertyNames")
+      .get("pattern").asString())
+      .isEqualTo("^[A-Za-z0-9_-]+$");
   }
 
   static class DatabasesSchema {
@@ -42,5 +30,69 @@ class TestMapKeyPattern {
 
   static class DatabaseSchema {
     URI conection;
+  }
+
+  @Test
+  void mapKeys_patternRestrictions_delegateType() {
+    var schema = new ExpressiveSchemaGenerator().generateSchema(DatabasesSchemaDelegate.class);
+    var dbs = (ObjectNode) schema.get("properties").get("Databases");
+    assertThat(dbs.propertyNames())
+      .contains("$ref", "propertyNames");
+    assertThat(dbs.get("propertyNames")
+      .get("pattern").asString())
+      .isEqualTo("^[A-Za-z0-9_-]+$");
+  }
+
+  @Test
+  void mapKeys_patternRestrictions_genericIntermediateType() {
+    var schema = new ExpressiveSchemaGenerator().generateSchema(GenericMapKeyPatternSchema.class);
+    var dbs = (ObjectNode) schema.get("properties").get("Databases");
+    assertThat(dbs.propertyNames())
+      .contains("$ref", "propertyNames");
+    assertThat(dbs.get("propertyNames")
+      .get("pattern").asString())
+      .isEqualTo("^[A-Za-z0-9_-]+$");
+  }
+
+  @Test
+  void mapKeys_patternRestrictions_reorderedGenericIntermediateType() {
+    var schema = new ExpressiveSchemaGenerator().generateSchema(ReorderedMapKeyPatternSchema.class);
+    var dbs = (ObjectNode) schema.get("properties").get("Databases");
+    assertThat(dbs.propertyNames())
+      .contains("$ref", "propertyNames");
+    assertThat(dbs.get("propertyNames")
+      .get("pattern").asString())
+      .isEqualTo("^[A-Za-z0-9_-]+$");
+  }
+
+  static class DatabasesSchemaDelegate {
+    public Databases Databases;
+  }
+
+  static class GenericMapKeyPatternSchema {
+    public KeyRestrictedDatabases Databases;
+  }
+
+  static class MapBase<K, V> extends HashMap<K, V> {
+  }
+
+  static class KeyRestrictedDatabases extends MapBase<@Pattern(regexp = "^[A-Za-z0-9_-]+$") String, DatabaseSchema> {
+  }
+
+  static class ReorderedMapKeyPatternSchema {
+    public ReorderedDatabases Databases;
+  }
+
+  static class ReorderedMapBase<K, V> extends HashMap<K, V> {
+  }
+
+  static class ReorderedMap<X, Y> extends ReorderedMapBase<Y, X> {
+  }
+
+  static class ReorderedDatabases extends ReorderedMap<DatabaseSchema, @Pattern(regexp = "^[A-Za-z0-9_-]+$") String> {
+  }
+
+  /** MAP delegate: Hiding Generics */
+  public class Databases extends HashMap<@Pattern(regexp = "^[A-Za-z0-9_-]+$") String, DatabaseSchema> {
   }
 }
