@@ -28,6 +28,32 @@ Will generate a schema as follows:
 }
 ```
 
+### Enum constant descriptions
+
+Use Jackson's `@JsonPropertyDescription` on enum constants to document individual values. If an enum has at least one described constant, its schema uses `oneOf` with a `const` for each value:
+
+```java
+enum Brand {
+  @JsonPropertyDescription("Red Hot Classic")
+  FERRARI,
+  FORD,
+  TOYOTA
+}
+```
+
+The generated schema includes descriptions only for annotated values:
+
+```json
+"type" : "string",
+"oneOf" : [
+  { "const" : "FERRARI", "description" : "Red Hot Classic" },
+  { "const" : "FORD" },
+  { "const" : "TOYOTA" }
+]
+```
+
+Enums without described constants keep the standard `enum` representation.
+
 ### @RemoteRef
 
 Simplifies the inclusion of other schemas, therefore enabling you to craft composite schemas.
