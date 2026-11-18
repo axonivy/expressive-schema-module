@@ -17,6 +17,7 @@ import io.github.axonivy.json.schema.impl.ConfigNamingStrategy;
 import io.github.axonivy.json.schema.impl.CustomPropertiesProvider;
 import io.github.axonivy.json.schema.impl.CustomTypeProvider;
 import io.github.axonivy.json.schema.impl.DynamicRefs;
+import io.github.axonivy.json.schema.impl.EnumDescriptionProvider;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
 import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
 import io.github.axonivy.json.schema.impl.MapKeyRestrictionProvider;
@@ -48,7 +49,8 @@ public class ExpressiveSchemaModule implements Module {
         .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
         .withCustomDefinitionProvider(new CustomPropertiesProvider())
         .withCustomDefinitionProvider(new CustomTypeProvider())
-        .withCustomDefinitionProvider(examples);
+        .withCustomDefinitionProvider(examples)
+        .withCustomDefinitionProvider(new EnumDescriptionProvider());
     configBuilder.forFields()
         .withCustomDefinitionProvider(new RemoteRefProvider(refs))
         .withCustomDefinitionProvider(examples)
