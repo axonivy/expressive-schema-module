@@ -67,6 +67,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: |
+          git reset --hard HEAD~1
           mvn --batch-mode versions:set -DnextSnapshot=true -DprocessAllModules -DgenerateBackupPoms=false
           nextVersion=$(mvn --non-recursive help:evaluate -Dexpression=project.version -q -DforceStdout)
           git add pom.xml jsonschema-module-expressive-annotations/pom.xml
