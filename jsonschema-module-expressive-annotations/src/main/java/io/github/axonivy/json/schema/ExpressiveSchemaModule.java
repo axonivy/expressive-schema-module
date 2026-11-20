@@ -60,10 +60,8 @@ public class ExpressiveSchemaModule implements Module {
           .withAdditionalPropertiesResolver(new io.github.axonivy.json.schema.impl.AdditionalPropsSupplier());
     }
     if (options.contains(ExpressiveSchemaOption.USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE)) {
-      var defaultValueProvider = new JacksonDefaultValueProvider();
       configBuilder.forFields()
-          .withDefaultResolver(defaultValueProvider)
-          .withInstanceAttributeOverride(defaultValueProvider);
+          .withInstanceAttributeOverride(new JacksonDefaultValueProvider());
     }
     if (options.contains(ExpressiveSchemaOption.USE_SCHEMA_SUFFIX_NAMING_STRATEGY)) {
       configBuilder.forTypesInGeneral()
