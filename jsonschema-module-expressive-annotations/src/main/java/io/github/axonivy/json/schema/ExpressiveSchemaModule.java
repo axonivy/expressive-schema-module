@@ -1,13 +1,9 @@
 package io.github.axonivy.json.schema;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.Module;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 
@@ -19,6 +15,7 @@ import io.github.axonivy.json.schema.impl.CustomTypeProvider;
 import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.EnumDescriptionProvider;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
+import io.github.axonivy.json.schema.impl.JacksonDefaultValueProvider;
 import io.github.axonivy.json.schema.impl.ImplementationTypesProvider;
 import io.github.axonivy.json.schema.impl.MapKeyRestrictionProvider;
 import io.github.axonivy.json.schema.impl.RemoteRefProvider;
@@ -63,8 +60,10 @@ public class ExpressiveSchemaModule implements Module {
           .withAdditionalPropertiesResolver(new io.github.axonivy.json.schema.impl.AdditionalPropsSupplier());
     }
     if (options.contains(ExpressiveSchemaOption.USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE)) {
+      var defaultValueProvider = new JacksonDefaultValueProvider();
       configBuilder.forFields()
-          .withDefaultResolver(ExpressiveSchemaModule::jacksonDefaultVal);
+          .withDefaultResolver(defaultValueProvider)
+          .withInstanceAttributeOverride(defaultValueProvider);
     }
     if (options.contains(ExpressiveSchemaOption.USE_SCHEMA_SUFFIX_NAMING_STRATEGY)) {
       configBuilder.forTypesInGeneral()
@@ -78,14 +77,6 @@ public class ExpressiveSchemaModule implements Module {
     configBuilder.forTypesInGeneral()
         .withCustomDefinitionProvider(new ImplementationTypesProvider(conditionals))
         .withCustomDefinitionProvider(new TypesAsFieldsProvider());
-  }
-
-  private static Object jacksonDefaultVal(FieldScope field) {
-    JsonProperty annotation = field.getAnnotationConsideringFieldAndGetter(JsonProperty.class);
-    return Optional.ofNullable(annotation)
-        .map(JsonProperty::defaultValue)
-        .filter(Predicate.not(String::isEmpty))
-        .orElse(null);
   }
 
   public enum ExpressiveSchemaOption {
