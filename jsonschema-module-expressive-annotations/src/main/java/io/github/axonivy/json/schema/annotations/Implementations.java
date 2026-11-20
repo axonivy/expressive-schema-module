@@ -23,6 +23,13 @@ public @interface Implementations {
    */
   public String container() default "config";
 
+  /**
+   * Indicates whether the container property is required in the schema. 
+   * This will enrich the <code>required = [...]</code> with the container property if set to true.
+   * @return whether the container property is required to be present.
+   */
+  public boolean containerRequired() default false;
+
   /** the provider of at least all valid-subtypes */
   public Class<? extends TypeReqistry> value();
 
@@ -35,6 +42,7 @@ public @interface Implementations {
     /**
       * A fallback type to enact when the 'type' is absent from the JSON.
       * Only has impact when {@link ExpressiveSchemaOption#PREFER_CONDITIONAL_SUBTYPES} is enabled.
+      * If no fallback is provided, <code>required = [...]</code> will enforce the presence of the 'type' property.
      */
     default Class<?> defaultType() {
       return null;

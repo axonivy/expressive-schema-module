@@ -10,7 +10,6 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 
 import io.github.axonivy.json.schema.ExpressiveSchemaModule;
 import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
-
 import tools.jackson.databind.node.ObjectNode;
 
 public class ExpressiveSchemaGenerator {
@@ -33,7 +32,7 @@ public class ExpressiveSchemaGenerator {
     this.generator = new SchemaGenerator(config);
   }
 
-  private static SchemaGeneratorConfigBuilder configBuilder() {
+  public static SchemaGeneratorConfigBuilder configBuilder() {
     var configBuilder = new SchemaGeneratorConfigBuilder(VERSION, OptionPreset.PLAIN_JSON);
     configBuilder.with(Option.DEFINITIONS_FOR_ALL_OBJECTS);
     return configBuilder;

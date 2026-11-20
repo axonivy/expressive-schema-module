@@ -52,7 +52,7 @@ class TestEnumDescriptions {
   }
 
   static enum PlainBrand {
-    Tessla,
+    Tesla,
     Renault,
     Peugeot
   }
