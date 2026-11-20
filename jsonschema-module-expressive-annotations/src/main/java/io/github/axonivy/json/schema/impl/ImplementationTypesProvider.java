@@ -89,20 +89,15 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     if (defaultType != null) {
       typeProperty.put(context.getKeyword(SchemaKeyword.TAG_DEFAULT), registry.typeName(defaultType));
     } else {
-      var required = context.getKeyword(SchemaKeyword.TAG_REQUIRED);
-      var requiredFields = (ArrayNode) std.get(required);
-      if (requiredFields == null) {
-        requiredFields = std.putArray(required);
-      }
-      if (impls.containerRequired() && !impls.container().isBlank()) {
-        requiredFields.add(impls.container());
-      }
-      requiredFields.add("type");
+      required(context, std).add(impls.type());
     }
     props.set(impls.type(), typeProperty);
-
+    
     String containerName = impls.container();
     if (!containerName.isBlank()) {
+      if (impls.containerRequired()) {
+        required(context, std).add(impls.container());
+      }
       var container = props.putObject(containerName);
       if (conditional) {
         container.put("type", "object"); // vs-code needs a generic block for validation
@@ -118,6 +113,15 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
         .toDefinition(() -> std)
         .map(node -> new CustomDefinition(node, false))
         .orElse(null);
+  }
+
+  private static ArrayNode required(SchemaGenerationContext context, ObjectNode std) {
+    var required = context.getKeyword(SchemaKeyword.TAG_REQUIRED);
+    var requiredFields = (ArrayNode) std.get(required);
+    if (requiredFields == null) {
+      requiredFields = std.putArray(required);
+    }
+    return requiredFields;
   }
 
   private Class<?> validateDefaultType(TypeReqistry registry) {

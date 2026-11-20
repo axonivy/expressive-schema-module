@@ -17,6 +17,7 @@ import io.github.axonivy.json.schema.ExpressiveSchemaModule;
 import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
+import io.github.axonivy.json.schema.tests.TestImplementationTypesRequired.GenericEnforce;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -83,6 +84,28 @@ class TestImplementationTypesRequired {
 
   @Implementations(value = LocalFactory.class, containerRequired = true)
   public interface GenericEnforce {
+    String id();
+  }
+
+  @Test
+  void required_mergeContainer_ifNamed() {
+    var schema = generateJacksonAwareSchema(MyRootNeedsContainerButBlank.class);
+    var defs = schema.get("$defs");
+    var generic = defs.get(GenericBlank.class.getSimpleName());
+    assertThat(generic.propertyNames())
+        .contains("required");
+    var required = (ArrayNode) generic.get("required");
+    assertThat(required.elements()).extracting(JsonNode::asString)
+        .as("container 'config' not added; since blank container name is specified")
+        .containsOnly("common", "type");
+  }
+
+  static class MyRootNeedsContainerButBlank {
+    public GenericBlank provider;
+  }
+
+  @Implementations(value = LocalFactory.class, containerRequired = true, container = "")
+  public interface GenericBlank {
     String id();
   }
 
