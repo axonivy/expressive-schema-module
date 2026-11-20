@@ -84,7 +84,7 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     Set<Class<?>> subTypes = registry.types();
     var props = propertiesOf(context, std);
     storeCommonProps(subTypes, props);
-    
+
     ObjectNode typeProperty = craftTypeConsts(context, registry);
     if (defaultType != null) {
       typeProperty.put(context.getKeyword(SchemaKeyword.TAG_DEFAULT), registry.typeName(defaultType));
@@ -93,6 +93,9 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
       var requiredFields = (ArrayNode) std.get(required);
       if (requiredFields == null) {
         requiredFields = std.putArray(required);
+      }
+      if (impls.containerRequired() && !impls.container().isBlank()) {
+        requiredFields.add(impls.container());
       }
       requiredFields.add("type");
     }
