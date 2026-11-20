@@ -1,5 +1,6 @@
 package io.github.axonivy.json.schema.tests;
 
+import static io.github.axonivy.json.schema.tests.TestImplementationTypes.nodesOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.EnumSet;
@@ -17,20 +18,19 @@ import io.github.axonivy.json.schema.ExpressiveSchemaModule;
 import io.github.axonivy.json.schema.ExpressiveSchemaModule.ExpressiveSchemaOption;
 import io.github.axonivy.json.schema.annotations.Implementations;
 import io.github.axonivy.json.schema.annotations.Implementations.TypeReqistry;
-import io.github.axonivy.json.schema.tests.TestImplementationTypesRequired.GenericEnforce;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
 class TestImplementationTypesRequired {
-  
+
   @Test
   void required_direct() {
     var base = generateJacksonAwareSchema(Base.class);
     assertThat(base.get("required"))
         .isInstanceOf(ArrayNode.class);
-      var required = (ArrayNode) base.get("required");
-      assertThat(required.elements()).extracting(JsonNode::asString)
-          .containsOnly("common");
+    var required = (ArrayNode) base.get("required");
+    assertThat(required.elements()).extracting(JsonNode::asString)
+        .containsOnly("common");
   }
 
   public static class Base implements Generic {
@@ -45,15 +45,24 @@ class TestImplementationTypesRequired {
   }
 
   @Test
-  void required_mergeBase_andTypeIfNoDefault(){
+  void required_mergeBase_andTypeIfNoDefault() {
     var defs = generateJacksonAwareSchema(MyRootType.class).get("$defs");
     var generic = defs.get(Generic.class.getSimpleName());
     assertThat(generic.propertyNames())
-      .contains("required");
+        .contains("required");
     var required = (ArrayNode) generic.get("required");
     assertThat(required.elements()).extracting(JsonNode::asString)
-      .as("require properties are merge: from 'base' + 'type' if no default is given")
-      .containsOnly("common", "type");
+        .as("require properties are merge: from 'base' + 'type' if no default is given")
+        .containsOnly("common", "type");
+
+    var another = defs.get(Another.class.getSimpleName());
+    assertThat(another.propertyNames())
+        .as("concrete sub-types propagate their required properties")
+        .contains("required");
+    var requireAnother = (ArrayNode) another.get("required");
+    assertThat(nodesOf(requireAnother)).extracting(JsonNode::asString)
+        .as("inherited 'common' from 'Base' should not contribute to virtual inner type requirements")
+        .containsOnly("version");
   }
 
   static class MyRootType {
@@ -109,21 +118,21 @@ class TestImplementationTypesRequired {
     String id();
   }
 
-  private static JsonNode generateJacksonAwareSchema(Class<?> rootType) {  
+  private static JsonNode generateJacksonAwareSchema(Class<?> rootType) {
     var module = new ExpressiveSchemaModule(EnumSet.allOf(ExpressiveSchemaOption.class));
     var config = ExpressiveSchemaGenerator.configBuilder().with(module)
-      .with(new JacksonSchemaModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED))
-      .build();
+        .with(new JacksonSchemaModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED))
+        .build();
     var schemaGenerator = new SchemaGenerator(config);
     return schemaGenerator.generateSchema(rootType);
   }
-
 
   public static class Specific extends Base implements Generic {
     public String customName;
   }
 
   public static class Another extends Base implements Generic {
+    @JsonProperty(required = true)
     public int version;
   }
 

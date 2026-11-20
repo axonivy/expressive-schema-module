@@ -70,6 +70,14 @@ public class ImplementationTypesProvider implements CustomDefinitionProviderV2 {
     if (std.get(context.getKeyword(SchemaKeyword.TAG_PROPERTIES)) instanceof ObjectNode props) {
       props.remove(baseCommon);
     }
+
+    var required = context.getKeyword(SchemaKeyword.TAG_REQUIRED);
+    if (std.get(required) instanceof ArrayNode requireArr) {
+      requireArr.removeIf(n -> baseCommon.contains(n.asString()));
+      if (requireArr.isEmpty()) {
+        std.remove(required);
+      }
+    }
     return new CustomDefinition(std);
   }
 
