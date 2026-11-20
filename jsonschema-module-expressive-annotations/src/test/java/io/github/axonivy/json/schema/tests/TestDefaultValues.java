@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.github.axonivy.json.schema.annotations.CustomType;
+import io.github.axonivy.json.schema.impl.StringValueLoader;
+import tools.jackson.databind.node.StringNode;
+
 class TestDefaultValues {
 
   @Test
@@ -47,6 +51,30 @@ class TestDefaultValues {
   private static class InvalidGarage {
     @JsonProperty(defaultValue = "[\"Toyota\"")
     public java.util.List<String> cars;
+  }
+
+  @Test
+  void noWarningsForObjectishStrings() {
+    var schema = new ExpressiveSchemaGenerator().generateSchema(BlackGarage.class);
+    System.out.println(schema.toPrettyString());
+
+    var loader = new StringValueLoader("id", 
+      GarageId.class, // re-produce; delegated custom-type to target field miss-match
+      null // provoke failure is mapper is getting used!
+    );
+    var def = loader.valueOf("#{id}");
+    assertThat(def).isInstanceOf(StringNode.class);
+    assertThat(def.asString())
+      .isEqualTo("#{id}");
+  }
+
+  private static class BlackGarage {
+    @JsonProperty(defaultValue = "#{id}")
+    GarageId id;
+  }
+
+  @CustomType(String.class)
+  private static class GarageId {
   }
 
   @Test
