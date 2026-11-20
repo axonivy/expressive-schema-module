@@ -280,7 +280,8 @@ public static class HookProperties implements PropertyContributor {
         Prop.string("speed")
             .description("how fast do you wanna go?")
             .examples(List.of("slow", "fast"))
-            .defaultValue("fast"),
+            .defaultValue("fast")
+            .deprecated(true),
         Prop.bool("enabled")
             .defaultValue(true),
         Prop.integer("passengers")
@@ -301,7 +302,8 @@ Will generate a schema as follows:
       "type" : "string",
       "description" : "how fast do you wanna go?",
       "default" : "fast",
-      "examples" : [ "slow", "fast" ]
+      "examples" : [ "slow", "fast" ],
+      "deprecated" : true
     },
     "enabled" : {
       "type" : "boolean",
