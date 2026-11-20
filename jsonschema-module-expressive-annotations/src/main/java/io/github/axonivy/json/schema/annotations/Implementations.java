@@ -35,6 +35,7 @@ public @interface Implementations {
     /**
       * A fallback type to enact when the 'type' is absent from the JSON.
       * Only has impact when {@link ExpressiveSchemaOption#PREFER_CONDITIONAL_SUBTYPES} is enabled.
+      * If no fallback is provided, <code>required = [...]</code> will enforce the presence of the 'type' property.
      */
     default Class<?> defaultType() {
       return null;
