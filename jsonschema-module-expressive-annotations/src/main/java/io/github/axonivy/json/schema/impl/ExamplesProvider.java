@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.classmate.ResolvedType;
+import com.github.victools.jsonschema.generator.AnnotationHelper;
 import com.github.victools.jsonschema.generator.CustomDefinition;
 import com.github.victools.jsonschema.generator.CustomDefinitionProviderV2;
 import com.github.victools.jsonschema.generator.CustomPropertyDefinition;
@@ -14,6 +15,7 @@ import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 import com.github.victools.jsonschema.generator.SchemaKeyword;
 
+import io.github.axonivy.json.schema.annotations.CustomType;
 import io.github.axonivy.json.schema.annotations.Examples;
 
 import tools.jackson.databind.JsonNode;
@@ -75,7 +77,12 @@ public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldS
     if (examples == null) {
       return null;
     }
-    var def = context.createStandardDefinition(javaType, this);
+    ResolvedType definitionType = AnnotationHelper
+        .resolveAnnotation(javaType.getErasedType(), CustomType.class,
+            annotation -> !annotation.toString().startsWith("@java.lang.annotation"))
+        .map(customType -> context.getTypeContext().resolve(customType.value()))
+        .orElse(javaType);
+    var def = context.createStandardDefinition(definitionType, this);
     declareExamples(def, examples, context);
     return new CustomDefinition(def);
   }

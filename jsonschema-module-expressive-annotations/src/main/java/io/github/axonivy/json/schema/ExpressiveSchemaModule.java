@@ -45,8 +45,8 @@ public class ExpressiveSchemaModule implements Module {
     configBuilder.forTypesInGeneral()
         .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
         .withCustomDefinitionProvider(new CustomPropertiesProvider())
-        .withCustomDefinitionProvider(new CustomTypeProvider())
         .withCustomDefinitionProvider(examples)
+        .withCustomDefinitionProvider(new CustomTypeProvider())
         .withCustomDefinitionProvider(new EnumDescriptionProvider());
     configBuilder.forFields()
         .withCustomDefinitionProvider(new RemoteRefProvider(refs))

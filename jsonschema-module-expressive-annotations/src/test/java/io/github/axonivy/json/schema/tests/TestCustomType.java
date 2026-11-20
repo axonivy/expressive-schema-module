@@ -1,5 +1,6 @@
 package io.github.axonivy.json.schema.tests;
 
+import static io.github.axonivy.json.schema.tests.TestImplementationTypes.nodesOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
@@ -11,7 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import io.github.axonivy.json.schema.annotations.CustomType;
-
+import io.github.axonivy.json.schema.annotations.Examples;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -38,7 +39,8 @@ class TestCustomType {
 
   static record User(
       int id,
-      @CustomType(TestCustomType.Provider.class) Object provider) {}
+      @CustomType(TestCustomType.Provider.class) Object provider) {
+  }
 
   static class Provider {
     public String name;
@@ -66,7 +68,8 @@ class TestCustomType {
   }
 
   @CustomType(Long.class)
-  static record Identifier(Long id) {}
+  static record Identifier(Long id) {
+  }
 
   @Test
   void customTypeInherited_type() {
@@ -83,9 +86,10 @@ class TestCustomType {
   }
 
   @MyCustom
-  static record TextId(String id) {}
+  static record TextId(String id) {
+  }
 
-  @Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
+  @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.TYPE })
   @Retention(RetentionPolicy.RUNTIME)
   @CustomType(value = String.class)
   @interface MyCustom {
@@ -105,6 +109,55 @@ class TestCustomType {
   static class BlockFields {
     @MyCustom
     Long id;
+  }
+
+  @Test
+  void customTypeExamples() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyElement.class);
+    var id = schema.get("properties").get("id");
+    assertThat(id.propertyNames()).containsOnly("$ref", "additionalProperties");
+
+    var rich = schema.get("$defs").get(MyRichIdentifier.class.getSimpleName());
+    var examples = rich.get("examples");
+
+    assertThat(nodesOf(examples))
+        .extracting(JsonNode::asString)
+        .containsExactly("f1", "f2");
+  }
+
+  static class MyElement {
+    @CustomType(MyRichIdentifier.class)
+    String id;
+  }
+
+  @CustomType(String.class)
+  @Examples({ "f1", "f2" })
+  static class MyRichIdentifier {
+
+  }
+
+  @Test
+  void customTypeExamples_field() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(MyElementLocal.class);
+    var id = schema.get("properties").get("id");
+    assertThat(id.propertyNames()).containsOnly("$ref", "examples", "additionalProperties");
+
+    var propertyExamples = id.get("examples");
+    assertThat(nodesOf(propertyExamples))
+        .extracting(JsonNode::asString)
+        .containsExactly("foreverOneHundred-123");
+
+    var richt = schema.get("$defs").get(MyRichIdentifier.class.getSimpleName());
+    var examples = richt.get("examples");
+    assertThat(nodesOf(examples))
+        .extracting(JsonNode::asString)
+        .containsExactly("f1", "f2");
+  }
+
+  static class MyElementLocal {
+    @Examples({ "foreverOneHundred-123" })
+    @CustomType(MyRichIdentifier.class)
+    String id;
   }
 
 }
