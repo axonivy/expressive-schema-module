@@ -28,6 +28,10 @@ class TestTypesAsFields {
 
     assertThat(props.get("Another").get("$ref").asString())
         .isEqualTo("#/$defs/Another");
+    assertThat(props.get("Another").get("deprecated").asBoolean())
+        .isTrue();
+    assertThat(props.get("Specific").has("deprecated"))
+        .isFalse();
 
     JsonNode another = defs.get("Another").get("properties");
     assertThat(namesOf(another))
@@ -39,13 +43,15 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory.class)
-  public interface Collection extends Map<String, Generic> {}
+  public interface Collection extends Map<String, Generic> {
+  }
 
   public static class LocalFactory implements FieldRegistry {
     @Override
     public Set<Class<?>> types() {
       return Set.of(Specific.class, Another.class, Container.class);
     }
+
   }
 
   @Test
@@ -63,7 +69,8 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory2.class)
-  public interface CollectionCustomFieldNames extends Map<String, Generic> {}
+  public interface CollectionCustomFieldNames extends Map<String, Generic> {
+  }
 
   public static class LocalFactory2 implements FieldRegistry {
     @Override
@@ -99,7 +106,8 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory3.class)
-  public interface CollectionOnBase extends Map<String, Generic> {}
+  public interface CollectionOnBase extends Map<String, Generic> {
+  }
 
   public static class LocalFactory3 implements FieldRegistry {
     @Override
@@ -124,9 +132,11 @@ class TestTypesAsFields {
 
     JsonNode another = props.get("Another");
     assertThat(namesOf(another))
-        .containsOnly("$ref", "description");
+        .containsOnly("$ref", "description", "deprecated");
     assertThat(another.get("description").asString())
         .isEqualTo("Lorem ipsum");
+    assertThat(another.get("deprecated").asBoolean())
+        .isTrue();
   }
 
   static class MyRootType4 {
@@ -134,7 +144,8 @@ class TestTypesAsFields {
   }
 
   @TypesAsFields(LocalFactory4.class)
-  public interface DescribedCollection extends Map<String, Generic> {}
+  public interface DescribedCollection extends Map<String, Generic> {
+  }
 
   public static class LocalFactory4 implements FieldRegistry {
     @Override
@@ -172,6 +183,7 @@ class TestTypesAsFields {
     public String customName;
   }
 
+  @Deprecated
   public static class Another extends Base implements Generic {
     public int version;
   }
