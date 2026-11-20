@@ -406,6 +406,16 @@ Generates:
 }
 ```
 
+### Deprecated properties
+
+Fields annotated with Java's `@Deprecated` are marked with JSON Schema's `deprecated` annotation:
+
+```json
+"id" : {
+  "deprecated" : true
+}
+```
+
 ## Options
 
 The module comes with a few opt-in schema features. See the `ExpressiveSchemaOption` enumeration.
