@@ -17,4 +17,13 @@ public @interface CustomType {
    * @return the type that should be used for json-schema generation
    */
   public Class<?> value();
+
+  /**
+   * The name of a property in the target type; that provides further type and annotation information.
+   * When set, the selected property's schema completely replaces the annotated property's schema; other properties
+   * of the target type are ignored. E.g. this is helpful to supply defaults using
+   * <code>@JsonProperty(defaultValue = "...")</code> in the target type.
+   * @return
+   */
+  public String property() default "";
 }

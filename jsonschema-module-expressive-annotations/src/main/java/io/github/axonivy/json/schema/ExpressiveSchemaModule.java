@@ -43,16 +43,18 @@ public class ExpressiveSchemaModule implements Module {
   @Override
   public void applyToConfigBuilder(SchemaGeneratorConfigBuilder configBuilder) {
     var examples = new ExamplesProvider();
+    var customTypes = new CustomTypeProvider();
     configBuilder.forTypesInGeneral()
+        .withCustomDefinitionProvider(customTypes.propertyReplacementProvider())
         .withCustomDefinitionProvider(new ConditionalFieldProvider(refs))
         .withCustomDefinitionProvider(new CustomPropertiesProvider())
         .withCustomDefinitionProvider(examples)
-        .withCustomDefinitionProvider(new CustomTypeProvider())
+        .withCustomDefinitionProvider(customTypes)
         .withCustomDefinitionProvider(new EnumDescriptionProvider());
     configBuilder.forFields()
         .withCustomDefinitionProvider(new RemoteRefProvider(refs))
         .withCustomDefinitionProvider(examples)
-        .withCustomDefinitionProvider(new CustomTypeProvider())
+        .withCustomDefinitionProvider(customTypes)
         .withInstanceAttributeOverride(new MapKeyRestrictionProvider())
         .withInstanceAttributeOverride(new DeprecationProvider())
         .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);

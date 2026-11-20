@@ -376,6 +376,45 @@ Generates:
 }
 ```
 
+To use one member of a replacement type as the complete schema for a property, set `property`. Only the selected member contributes to the replacement schema; other members are ignored. The default below requires `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE` to be enabled.
+
+```java
+class Customization {
+  @CustomType(value = ScriptExpression.class, property = "script")
+  String script;
+}
+
+class ScriptExpression {
+  @JsonProperty(defaultValue = "#{}")
+  @JsonPropertyDescription("The script expression")
+  String script;
+
+  String ignored;
+}
+```
+
+Generates:
+
+```json
+{
+  "$schema" : "https://json-schema.org/draft/2019-09/schema",
+  "$defs" : {
+    "ScriptExpression" : {
+      "description" : "The script expression",
+      "type" : "string",
+      "default" : "#{}"
+    }
+  },
+  "type" : "object",
+  "properties" : {
+    "script" : {
+      "$ref" : "#/$defs/ScriptExpression"
+    }
+  },
+  "additionalProperties" : false
+}
+```
+
 ### Default values
 
 When `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE` is enabled, `@JsonProperty(defaultValue=...)` contributes a property's default value. For collection and array properties, provide the default as a JSON array string.
