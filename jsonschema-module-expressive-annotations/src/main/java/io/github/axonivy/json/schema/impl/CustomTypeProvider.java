@@ -1,7 +1,10 @@
 package io.github.axonivy.json.schema.impl;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import com.fasterxml.classmate.ResolvedType;
@@ -25,6 +28,7 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
 
   private static final Predicate<Annotation> CONSIDER_NESTED = a -> !a.toString().startsWith("@java.lang.annotation");
   private final ThreadLocal<PropertyReplacement> activeReplacement = new ThreadLocal<>();
+  private final ThreadLocal<Set<ReplacementKey>> activeProjections = new ThreadLocal<>();
 
   public CustomDefinitionProviderV2 propertyReplacementProvider() {
     return this::providePropertyReplacement;
@@ -39,7 +43,11 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
 
     var resolvedType = context.getTypeContext().resolve(customType.value());
     if (!customType.property().isEmpty()) {
-      return resolveProperty(scope, context, customType, resolvedType);
+      var replacementScope = resolveProperty(resolvedType, customType.property(), scope, context);
+      if (isActiveProjection(resolvedType, replacementScope)) {
+        return null;
+      }
+      return resolveProperty(scope, context, resolvedType, replacementScope);
     }
 
     var definition = context.createDefinitionReference(resolvedType);
@@ -64,19 +72,31 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
     }
 
     activeReplacement.remove();
-    var definition = context.createStandardDefinition(replacement.scope(), this);
-    var description = replacement.scope()
-        .getAnnotationConsideringFieldAndGetter(JsonPropertyDescription.class, CONSIDER_NESTED);
-    if (description != null && !description.value().isBlank()) {
-      definition.put(context.getKeyword(SchemaKeyword.TAG_DESCRIPTION), description.value());
+    var key = new ReplacementKey(replacement.type(), replacement.scope().getMember().getRawMember());
+    var projections = activeProjections.get();
+    if (projections == null) {
+      projections = new HashSet<>();
+      activeProjections.set(projections);
     }
-    return new CustomDefinition(definition, DefinitionType.STANDARD, AttributeInclusion.NO);
+    projections.add(key);
+    try {
+      var definition = context.createStandardDefinition(replacement.scope(), null);
+      var description = replacement.scope()
+          .getAnnotationConsideringFieldAndGetter(JsonPropertyDescription.class, CONSIDER_NESTED);
+      if (description != null && !description.value().isBlank()) {
+        definition.put(context.getKeyword(SchemaKeyword.TAG_DESCRIPTION), description.value());
+      }
+      return new CustomDefinition(definition, DefinitionType.STANDARD, AttributeInclusion.NO);
+    } finally {
+      projections.remove(key);
+      if (projections.isEmpty()) {
+        activeProjections.remove();
+      }
+    }
   }
 
   private CustomPropertyDefinition resolveProperty(FieldScope scope, SchemaGenerationContext context,
-      CustomType customType,
-      ResolvedType resolvedType) {
-    var replacementScope = resolveProperty(resolvedType, customType.property(), scope, context);
+      ResolvedType resolvedType, FieldScope replacementScope) {
     var replacement = new PropertyReplacement(resolvedType, replacementScope);
     var previous = activeReplacement.get();
     activeReplacement.set(replacement);
@@ -103,6 +123,14 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
             + replacementType.getErasedType().getName() + "' for field '" + source.getName() + "'"));
   }
 
+  private boolean isActiveProjection(ResolvedType type, FieldScope scope) {
+    Set<ReplacementKey> projections = activeProjections.get();
+    return projections != null
+        && projections.contains(new ReplacementKey(type, scope.getMember().getRawMember()));
+  }
+
   private record PropertyReplacement(ResolvedType type, FieldScope scope) {}
+
+  private record ReplacementKey(ResolvedType type, Field field) {}
 
 }

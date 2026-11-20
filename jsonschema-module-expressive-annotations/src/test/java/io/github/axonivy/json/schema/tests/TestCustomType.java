@@ -167,10 +167,10 @@ class TestCustomType {
   @Test
   void customType_defaultValue() {
     ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(Customization.class);
-    var property  = schema.get("properties").get("script");
+    var property = schema.get("properties").get("script");
     assertThat(property.propertyNames()).containsOnly("$ref");
     assertThat(property.get("$ref").asString()).isEqualTo("#/$defs/ScriptExpression");
-    
+
     var script = schema.get("$defs").get(ScriptExpression.class.getSimpleName());
     assertThat(script.get("type").asString())
         .isEqualTo("string");
@@ -191,6 +191,49 @@ class TestCustomType {
   static class ScriptExpression {
     @JsonProperty(defaultValue = "#{}")
     @JsonPropertyDescription("The script expression")
+    String script;
+  }
+
+  @Test
+  void customType_selectedPropertyUsesItsCustomType() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(NestedCustomization.class);
+    var expression = schema.get("$defs").get(NestedExpression.class.getSimpleName());
+    assertThat(expression.get("$ref").asString()).isEqualTo("#/$defs/ScriptText");
+
+    var scriptText = schema.get("$defs").get(ScriptText.class.getSimpleName());
+    assertThat(scriptText.get("type").asString()).isEqualTo("string");
+  }
+
+  static class NestedCustomization {
+    @CustomType(value = NestedExpression.class, property = "script")
+    String script;
+  }
+
+  static class NestedExpression {
+    @CustomType(ScriptText.class)
+    String script;
+    String ignored;
+  }
+
+  @CustomType(String.class)
+  static class ScriptText {
+  }
+
+  @Test
+  void customType_selectedPropertySelfReferenceDoesNotRecurse() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(SelfCustomization.class);
+    var expression = schema.get("$defs").get(SelfExpression.class.getSimpleName());
+    assertThat(expression.get("type").asString()).isEqualTo("string");
+    assertThat(expression.has("$ref")).isFalse();
+  }
+
+  static class SelfCustomization {
+    @CustomType(value = SelfExpression.class, property = "script")
+    String script;
+  }
+
+  static class SelfExpression {
+    @CustomType(value = SelfExpression.class, property = "script")
     String script;
   }
 
