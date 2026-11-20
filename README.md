@@ -374,12 +374,44 @@ Generates:
 }
 ```
 
+### Default values
+
+When `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE` is enabled, `@JsonProperty(defaultValue=...)` contributes a property's default value. For collection and array properties, provide the default as a JSON array string.
+
+```java
+class MyGarage {
+  @JsonProperty(defaultValue = "Toyota")
+  public String brand;
+
+  @JsonProperty(defaultValue = "[\"Corolla\"]")
+  public List<String> cars;
+}
+```
+
+Generates:
+
+```json
+"properties" : {
+  "brand" : {
+    "default" : "Toyota",
+    "type" : "string"
+  },
+  "cars" : {
+    "default" : [ "Corolla" ],
+    "type" : "array",
+    "items" : {
+      "type" : "string"
+    }
+  }
+}
+```
+
 ## Options
 
 The module comes with a few opt-in schema features. See the `ExpressiveSchemaOption` enumeration.
 
 - `USE_ADDITIONAL_PROPERTIES_ANNOTATION`: disables any properties, unless you actually allow them by using the `@AdditionalProperties` annotation.
-- `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE`: contributes default values to the jsonschema by using Jacksons `@JsonPropert(defaultValue="myDefault")` annotation for the task.
+- `USE_JACKSON_JSON_PROPERTY_DEFAULT_VALUE`: contributes default values to the jsonschema by using Jackson's `@JsonProperty(defaultValue="myDefault")` annotation.
 - `USE_SCHEMA_SUFFIX_NAMING_STRATEGY`: provides a naming strategy that cleans your types from 'Schema' suffixes. We use this for object models that were invented just for the sake of documenting jsonschema features. So we added 'Schema' postfixes to make them distinguable from real productive objects. In the generated schema however, these long names are removed.
 - `PREFER_CONDITIONAL_SUBTYPES`: for `@Implementations`, emits `if`/`then` conditionals to select the config schema based on the `type` property. Without this option, the config property uses `anyOf` to list the implementation schemas, which is better supported by some consumers such as json-schema-to-typescript.
 
