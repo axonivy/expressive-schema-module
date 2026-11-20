@@ -26,6 +26,10 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
   private static final Predicate<Annotation> CONSIDER_NESTED = a -> !a.toString().startsWith("@java.lang.annotation");
   private final ThreadLocal<PropertyReplacement> activeReplacement = new ThreadLocal<>();
 
+  public CustomDefinitionProviderV2 propertyReplacementProvider() {
+    return this::providePropertyReplacement;
+  }
+
   @Override
   public CustomPropertyDefinition provideCustomSchemaDefinition(FieldScope scope, SchemaGenerationContext context) {
     var customType = scope.getAnnotation(CustomType.class, CONSIDER_NESTED);
@@ -44,18 +48,6 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
 
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType javaType, SchemaGenerationContext context) {
-    PropertyReplacement replacement = activeReplacement.get();
-    if (replacement != null && replacement.type().equals(javaType)) {
-      activeReplacement.remove();
-      var definition = context.createStandardDefinition(replacement.scope(), this);
-      var description = replacement.scope()
-          .getAnnotationConsideringFieldAndGetter(JsonPropertyDescription.class, CONSIDER_NESTED);
-      if (description != null && !description.value().isBlank()) {
-        definition.put(context.getKeyword(SchemaKeyword.TAG_DESCRIPTION), description.value());
-      }
-      return new CustomDefinition(definition, DefinitionType.STANDARD, AttributeInclusion.NO);
-    }
-
     var reference = AnnotationHelper.resolveAnnotation(javaType.getErasedType(), CustomType.class, CONSIDER_NESTED);
     if (reference.isEmpty()) {
       return null;
@@ -63,6 +55,22 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
     ResolvedType resolvedType = context.getTypeContext().resolve(reference.get().value());
     var definition = context.createStandardDefinition(resolvedType, this);
     return new CustomDefinition(definition);
+  }
+
+  private CustomDefinition providePropertyReplacement(ResolvedType javaType, SchemaGenerationContext context) {
+    PropertyReplacement replacement = activeReplacement.get();
+    if (replacement == null || !replacement.type().equals(javaType)) {
+      return null;
+    }
+
+    activeReplacement.remove();
+    var definition = context.createStandardDefinition(replacement.scope(), this);
+    var description = replacement.scope()
+        .getAnnotationConsideringFieldAndGetter(JsonPropertyDescription.class, CONSIDER_NESTED);
+    if (description != null && !description.value().isBlank()) {
+      definition.put(context.getKeyword(SchemaKeyword.TAG_DESCRIPTION), description.value());
+    }
+    return new CustomDefinition(definition, DefinitionType.STANDARD, AttributeInclusion.NO);
   }
 
   private CustomPropertyDefinition resolveProperty(FieldScope scope, SchemaGenerationContext context,

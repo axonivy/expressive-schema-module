@@ -175,6 +175,7 @@ class TestCustomType {
     assertThat(script.get("type").asString())
         .isEqualTo("string");
     assertThat(script.has("properties")).isFalse();
+    assertThat(script.has("examples")).isFalse();
     assertThat(script.get("default").asString())
         .isEqualTo("#{}");
     assertThat(script.get("description").asString())
@@ -186,6 +187,7 @@ class TestCustomType {
     String script;
   }
 
+  @Examples({ "not part of the selected property schema" })
   static class ScriptExpression {
     @JsonProperty(defaultValue = "#{}")
     @JsonPropertyDescription("The script expression")
