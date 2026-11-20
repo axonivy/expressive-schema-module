@@ -35,12 +35,14 @@ class TestPropertiesProvider {
     assertThat(nodesOf(speed.get("examples")))
         .extracting(JsonNode::asString)
         .containsOnly("slow", "fast");
+    assertThat(speed.get("deprecated").asBoolean()).isTrue();
 
     var enabled = props.get("enabled");
     assertThat(enabled.get("type").asString())
         .isEqualTo("boolean");
     assertThat(enabled.get("default").asBoolean())
         .isEqualTo(true);
+    assertThat(enabled.has("deprecated")).isFalse();
 
     var passengers = props.get("passengers");
     assertThat(passengers.get("type").asString())
@@ -65,7 +67,8 @@ class TestPropertiesProvider {
           Prop.string("speed")
               .description("how fast do you wanna go?")
               .examples(List.of("slow", "fast"))
-              .defaultValue("fast"),
+              .defaultValue("fast")
+              .deprecated(true),
           Prop.bool("enabled")
               .defaultValue(true),
           Prop.integer("passengers")

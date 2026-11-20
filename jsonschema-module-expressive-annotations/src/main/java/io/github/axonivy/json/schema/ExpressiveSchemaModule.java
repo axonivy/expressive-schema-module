@@ -12,6 +12,7 @@ import io.github.axonivy.json.schema.impl.ConditionalFieldProvider;
 import io.github.axonivy.json.schema.impl.ConfigNamingStrategy;
 import io.github.axonivy.json.schema.impl.CustomPropertiesProvider;
 import io.github.axonivy.json.schema.impl.CustomTypeProvider;
+import io.github.axonivy.json.schema.impl.DeprecationProvider;
 import io.github.axonivy.json.schema.impl.DynamicRefs;
 import io.github.axonivy.json.schema.impl.EnumDescriptionProvider;
 import io.github.axonivy.json.schema.impl.ExamplesProvider;
@@ -53,6 +54,7 @@ public class ExpressiveSchemaModule implements Module {
         .withCustomDefinitionProvider(examples)
         .withCustomDefinitionProvider(new CustomTypeProvider())
         .withInstanceAttributeOverride(new MapKeyRestrictionProvider())
+        .withInstanceAttributeOverride(new DeprecationProvider())
         .withIgnoreCheck(f -> f.getAnnotation(Conditional.class) != null);
 
     if (options.contains(ExpressiveSchemaOption.USE_ADDITIONAL_PROPERTIES_ANNOTATION)) {

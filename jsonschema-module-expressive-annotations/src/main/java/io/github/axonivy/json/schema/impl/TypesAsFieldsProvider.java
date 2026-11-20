@@ -57,6 +57,9 @@ public class TypesAsFieldsProvider implements CustomDefinitionProviderV2 {
       Optional.ofNullable(registry.fieldDescription(type)).ifPresent(desc -> {
         def.put(context.getKeyword(SchemaKeyword.TAG_DESCRIPTION), desc);
       });
+      if (type.isAnnotationPresent(Deprecated.class)) {
+        def.put("deprecated", true);
+      }
       props.set(name, def);
     }
 
@@ -67,7 +70,8 @@ public class TypesAsFieldsProvider implements CustomDefinitionProviderV2 {
       Constructor<?> constructor = registryType.getConstructors()[0];
       return (FieldRegistry) constructor.newInstance();
     } catch (Exception ex) {
-      throw new RuntimeException("Failed to create type registry: " + registryType + ". Does it have a public zero-arg constructor?", ex);
+      throw new RuntimeException(
+          "Failed to create type registry: " + registryType + ". Does it have a public zero-arg constructor?", ex);
     }
   }
 }

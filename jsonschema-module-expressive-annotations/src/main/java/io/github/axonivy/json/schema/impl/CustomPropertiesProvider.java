@@ -67,6 +67,9 @@ public class CustomPropertiesProvider implements CustomDefinitionProviderV2 {
           })
           .filter(Predicate.not(ArrayNode::isEmpty))
           .ifPresent(ex -> json.set("examples", ex));
+      if (prop.deprecated()) {
+        json.put("deprecated", true);
+      }
     });
     return properties;
   }
