@@ -10,6 +10,10 @@ import java.lang.annotation.Target;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestClassOrder;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 import io.github.axonivy.json.schema.annotations.CustomType;
 import io.github.axonivy.json.schema.annotations.Examples;
@@ -158,6 +162,34 @@ class TestCustomType {
     @Examples({ "foreverOneHundred-123" })
     @CustomType(MyRichIdentifier.class)
     String id;
+  }
+
+  @Test
+  void customType_defaultValue() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(Customization.class);
+    var property  = schema.get("properties").get("script");
+    assertThat(property.propertyNames()).containsOnly("$ref");
+    assertThat(property.get("$ref").asString()).isEqualTo("#/$defs/ScriptExpression");
+    
+    var script = schema.get("$defs").get(ScriptExpression.class.getSimpleName());
+    assertThat(script.get("type").asString())
+        .isEqualTo("string");
+    assertThat(script.has("properties")).isFalse();
+    assertThat(script.get("default").asString())
+        .isEqualTo("#{}");
+    assertThat(script.get("description").asString())
+        .isEqualTo("The script expression");
+  }
+
+  static class Customization {
+    @CustomType(value = ScriptExpression.class, property = "script")
+    String script;
+  }
+
+  static class ScriptExpression {
+    @JsonProperty(defaultValue = "#{}")
+    @JsonPropertyDescription("The script expression")
+    String script;
   }
 
 }
