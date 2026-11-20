@@ -57,7 +57,7 @@ class TestImplementationTypesRequired {
 
     var another = defs.get(Another.class.getSimpleName());
     assertThat(another.propertyNames())
-        .as("concrete sub-types propagate their requird properties")
+        .as("concrete sub-types propagate their required properties")
         .contains("required");
     var requireAnother = (ArrayNode) another.get("required");
     assertThat(nodesOf(requireAnother)).extracting(JsonNode::asString)
