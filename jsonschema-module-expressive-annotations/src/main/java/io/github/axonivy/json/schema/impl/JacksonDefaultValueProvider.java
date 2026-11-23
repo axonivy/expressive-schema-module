@@ -24,8 +24,10 @@ public class JacksonDefaultValueProvider implements InstanceAttributeOverrideV2<
       return;
     }
 
+    var type = CustomTypeProvider.resolveCustomTypeFor(field.getType(), context).orElse(field.getType());
+
     var loader = new StringValueLoader(field.getName(),
-        field.getType().getErasedType(),
+        type.getErasedType(),
         context.getGeneratorConfig().getObjectMapper());
     var defaultVal = loader.valueOf(annotation.defaultValue());
     node.set(context.getKeyword(SchemaKeyword.TAG_DEFAULT), defaultVal);

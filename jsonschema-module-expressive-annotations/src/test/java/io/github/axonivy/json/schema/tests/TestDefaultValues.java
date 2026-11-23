@@ -2,11 +2,15 @@ package io.github.axonivy.json.schema.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.github.axonivy.json.schema.annotations.CustomType;
+import io.github.axonivy.json.schema.impl.JacksonDefaultValueProvider;
 import io.github.axonivy.json.schema.impl.StringValueLoader;
 import tools.jackson.databind.node.StringNode;
 
@@ -55,10 +59,14 @@ class TestDefaultValues {
 
   @Test
   void noWarningsForObjectishStrings() {
-    var schema = new ExpressiveSchemaGenerator().generateSchema(BlackGarage.class);
-    System.out.println(schema.toPrettyString());
+    var logRecorder = new LogRecorder();
+    logRecorder.record(
+      Logger.getLogger(JacksonDefaultValueProvider.class.getName()).getName(), 
+      () -> new ExpressiveSchemaGenerator().generateSchema(BlackGarage.class)
+    );
+    assertThat(logRecorder.warnings()).isEmpty();
 
-    var loader = new StringValueLoader("id", 
+    var loader = new StringValueLoader("id",
       GarageId.class, // re-produce; delegated custom-type to target field miss-match
       null // provoke failure is mapper is getting used!
     );
