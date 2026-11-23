@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -56,13 +57,20 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
 
   @Override
   public CustomDefinition provideCustomSchemaDefinition(ResolvedType javaType, SchemaGenerationContext context) {
-    var reference = AnnotationHelper.resolveAnnotation(javaType.getErasedType(), CustomType.class, CONSIDER_NESTED);
-    if (reference.isEmpty()) {
+    var resolvedTypeOpt = resolveCustomTypeFor(javaType, context);
+    if (resolvedTypeOpt.isEmpty()) {
       return null;
     }
-    ResolvedType resolvedType = context.getTypeContext().resolve(reference.get().value());
-    var definition = context.createStandardDefinition(resolvedType, this);
+    var definition = context.createStandardDefinition(resolvedTypeOpt.get(), this);
     return new CustomDefinition(definition);
+  }
+
+  public static Optional<ResolvedType> resolveCustomTypeFor(ResolvedType javaType, SchemaGenerationContext context) {
+    var reference = AnnotationHelper.resolveAnnotation(javaType.getErasedType(), CustomType.class, CONSIDER_NESTED);
+    if (reference.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.of(context.getTypeContext().resolve(reference.get().value()));
   }
 
   private CustomDefinition providePropertyReplacement(ResolvedType javaType, SchemaGenerationContext context) {
