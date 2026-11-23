@@ -1,11 +1,9 @@
 package io.github.axonivy.json.schema.impl;
 
-import java.util.List;
-import java.util.Collection;
 import java.util.logging.Level;
 
 import tools.jackson.core.JacksonException;
-import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.JsonNodeFactory;
@@ -16,10 +14,10 @@ import tools.jackson.databind.node.JsonNodeFactory;
 public class StringValueLoader {
 
   private final String field;
-  private final Class<?> fieldType;
+  private final JavaType fieldType;
   private final ObjectMapper mapper;
 
-  public StringValueLoader(String field, Class<?> fieldType, ObjectMapper mapper) {
+  public StringValueLoader(String field, JavaType fieldType, ObjectMapper mapper) {
     this.field = field;
     this.fieldType = fieldType;
     this.mapper = mapper;
@@ -30,7 +28,7 @@ public class StringValueLoader {
     if (defaultValue.contains("{")) {
       return stringDefault;
     }
-    if (fieldType == String.class) {
+    if (fieldType.getRawClass() == String.class) {
       return stringDefault;
     }
 
@@ -48,12 +46,9 @@ public class StringValueLoader {
   private Object readValue(String defaultValue, ObjectMapper objectMapper) {
     try {
       var reader = objectMapper.reader().forType(fieldType);
-      if (Collection.class.isAssignableFrom(fieldType)) {
-        reader = objectMapper.reader().forType(new TypeReference<List<String>>() {});
-      }
       return reader.readValue(defaultValue);
     } catch (JacksonException ex) {
-      if (fieldType.isEnum()) {
+      if (fieldType.getRawClass().isEnum()) {
         try {
           return objectMapper.convertValue(defaultValue, fieldType);
         } catch (IllegalArgumentException enumEx) {

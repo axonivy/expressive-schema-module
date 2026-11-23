@@ -12,7 +12,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.axonivy.json.schema.annotations.CustomType;
 import io.github.axonivy.json.schema.impl.JacksonDefaultValueProvider;
 import io.github.axonivy.json.schema.impl.StringValueLoader;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.StringNode;
+import tools.jackson.databind.type.TypeFactory;
 
 class TestDefaultValues {
 
@@ -40,7 +42,7 @@ class TestDefaultValues {
   }
 
   private static class MyGarage {
-    @JsonProperty(defaultValue = "[\"Toyota\"]")
+    @JsonProperty(defaultValue = "[\"Toyota\"] ")
     public java.util.List<String> cars;
   }
 
@@ -48,8 +50,10 @@ class TestDefaultValues {
   void invalidJsonDefaultForList_fallsBackToString() {
     var schema = new ExpressiveSchemaGenerator().generateSchema(InvalidGarage.class);
     var defaultValue = schema.get("properties").get("cars").get("default");
-    assertThat(defaultValue.isString()).isTrue();
-    assertThat(defaultValue.asString()).isEqualTo("[\"Toyota\"");
+    assertThat(defaultValue.isString())
+        .isTrue();
+    assertThat(defaultValue.asString())
+        .isEqualTo("[\"Toyota\"");
   }
 
   private static class InvalidGarage {
@@ -60,20 +64,31 @@ class TestDefaultValues {
   @Test
   void noWarningsForObjectishStrings() {
     var logRecorder = new LogRecorder();
-    logRecorder.record(
-      Logger.getLogger(JacksonDefaultValueProvider.class.getName()).getName(), 
-      () -> new ExpressiveSchemaGenerator().generateSchema(BlackGarage.class)
-    );
+    var schema = logRecorder.record(
+        Logger.getLogger(JacksonDefaultValueProvider.class.getName()).getName(),
+        () -> new ExpressiveSchemaGenerator().generateSchema(BlackGarage.class));
     assertThat(logRecorder.warnings()).isEmpty();
 
+    var garage = schema.get("properties");
+    assertThat(garage.get("partners").get("default").toString())
+        .isEqualTo("[\"green27\"]");
+
+    System.out.println(schema.toPrettyString());
+    assertThat(garage.get("goldMembers").get("default").toString())
+        .isEqualTo("[42]");
+  }
+
+  @Test
+  void defaultValueLoader() {
     var loader = new StringValueLoader("id",
-      GarageId.class, // re-produce; delegated custom-type to target field miss-match
-      null // provoke failure is mapper is getting used!
-    );
+        TypeFactory.unsafeSimpleType(GarageId.class), // re-produce; delegated custom-type to target field miss-match
+        new ObjectMapper());
     var def = loader.valueOf("#{id}");
-    assertThat(def).isInstanceOf(StringNode.class);
+    assertThat(def)
+        .as("object declarations; fallback to string")
+        .isInstanceOf(StringNode.class);
     assertThat(def.asString())
-      .isEqualTo("#{id}");
+        .isEqualTo("#{id}");
   }
 
   private static class BlackGarage {
@@ -82,10 +97,25 @@ class TestDefaultValues {
 
     @JsonProperty(defaultValue = "[ \"green27\" ]")
     List<GarageId> partners;
+
+    @JsonProperty(defaultValue = "[ 42 ]")
+    List<CustomId> goldMembers;
+
+    @JsonProperty(defaultValue = "[\"ClASSIC\"]")
+    List<Type> types;
   }
 
   @CustomType(String.class)
   private static class GarageId {
+  }
+
+  @CustomType(Integer.class)
+  private static class CustomId {
+  }
+
+  private enum Type {
+    ClASSIC,
+    MODERN
   }
 
   @Test
