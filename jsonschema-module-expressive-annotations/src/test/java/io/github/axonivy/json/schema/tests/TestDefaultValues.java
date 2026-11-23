@@ -32,6 +32,21 @@ class TestDefaultValues {
   }
 
   @Test
+  void defaultValueUsesFieldCustomType() {
+    var schema = new ExpressiveSchemaGenerator().generateSchema(CustomTypeDefaults.class);
+    var defaultValue = schema.get("properties").get("value").get("default");
+
+    assertThat(defaultValue.isString()).isTrue();
+    assertThat(defaultValue.asString()).isEqualTo("true");
+  }
+
+  private static class CustomTypeDefaults {
+    @CustomType(String.class)
+    @JsonProperty(defaultValue = "true")
+    Object value;
+  }
+
+  @Test
   void defaultValueForList() {
     var schema = new ExpressiveSchemaGenerator().generateSchema(MyGarage.class);
     var cars = schema.get("properties").get("cars");

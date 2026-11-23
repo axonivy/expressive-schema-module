@@ -18,6 +18,7 @@ import com.github.victools.jsonschema.generator.SchemaKeyword;
 import io.github.axonivy.json.schema.annotations.CustomType;
 import io.github.axonivy.json.schema.annotations.Examples;
 
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -36,7 +37,7 @@ public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldS
     if (def == null) {
       return null;
     }
-    declareExamples(def, examples, context);
+    declareExamples(def, examples, scope.getName(), JacksonTypeAdapter.toJavaType(scope, context), context);
     return new CustomPropertyDefinition(def);
   }
 
@@ -53,18 +54,20 @@ public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldS
     }
   }
 
-  private static void declareExamples(ObjectNode def, Examples examples, SchemaGenerationContext context) {
+  private static void declareExamples(ObjectNode def, Examples examples, String name, JavaType type,
+      SchemaGenerationContext context) {
     JsonNode allOf = def.get(SchemaKeyword.TAG_ALLOF.forVersion(context.getGeneratorConfig().getSchemaVersion()));
+    var loader = new StringValueLoader(name, type, context.getGeneratorConfig().getObjectMapper());
     if (allOf instanceof ArrayNode holder) {
-      declare(examples, holder.addObject());
+      declare(examples, holder.addObject(), loader);
     } else {
-      declare(examples, def);
+      declare(examples, def, loader);
     }
   }
 
-  private static void declare(Examples examples, ObjectNode holder) {
+  private static void declare(Examples examples, ObjectNode holder, StringValueLoader loader) {
     var jExamples = holder.putArray(Key.EXAMPLES);
-    Arrays.stream(examples.value()).forEachOrdered(jExamples::add);
+    Arrays.stream(examples.value()).map(loader::valueCollectionAware).forEachOrdered(jExamples::add);
   }
 
   private interface Key {
@@ -83,7 +86,8 @@ public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldS
         .map(customType -> context.getTypeContext().resolve(customType.value()))
         .orElse(javaType);
     var def = context.createStandardDefinition(definitionType, this);
-    declareExamples(def, examples, context);
+    declareExamples(def, examples, javaType.getErasedType().getSimpleName(),
+        JacksonTypeAdapter.toJavaType(definitionType, context), context);
     return new CustomDefinition(def);
   }
 

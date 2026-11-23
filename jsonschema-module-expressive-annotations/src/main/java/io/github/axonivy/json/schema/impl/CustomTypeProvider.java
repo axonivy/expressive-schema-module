@@ -73,6 +73,18 @@ public class CustomTypeProvider implements CustomPropertyDefinitionProvider<Fiel
     return Optional.of(context.getTypeContext().resolve(reference.get().value()));
   }
 
+  static ResolvedType resolveEffectiveTypeFor(FieldScope scope, SchemaGenerationContext context) {
+    var customType = scope.getAnnotation(CustomType.class, CONSIDER_NESTED);
+    if (customType == null) {
+      return scope.getType();
+    }
+    ResolvedType resolvedType = context.getTypeContext().resolve(customType.value());
+    if (customType.property().isEmpty()) {
+      return resolvedType;
+    }
+    return resolveProperty(resolvedType, customType.property(), scope, context).getType();
+  }
+
   private CustomDefinition providePropertyReplacement(ResolvedType javaType, SchemaGenerationContext context) {
     PropertyReplacement replacement = activeReplacement.get();
     if (replacement == null || !replacement.type().equals(javaType)) {
