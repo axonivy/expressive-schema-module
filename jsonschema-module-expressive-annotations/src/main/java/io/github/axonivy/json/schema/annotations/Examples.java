@@ -8,6 +8,8 @@ import java.lang.annotation.Target;
 /**
  * Documents valid example values.
  * VS-Code will use them just like classic 'enum' types: and list em as completable values.
+ * For collection and array types, values that are not complete collection examples are interpreted as examples
+ * of individual items.
  *
  * @see "https://json-schema.org/understanding-json-schema/reference/generic.html#id2"
  *

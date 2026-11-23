@@ -1,5 +1,6 @@
 package io.github.axonivy.json.schema.impl;
 
+import java.util.Optional;
 import java.util.logging.Level;
 
 import tools.jackson.core.JacksonException;
@@ -23,17 +24,14 @@ public class StringValueLoader {
     this.mapper = mapper;
   }
 
-  public JsonNode valueOf(String defaultValue) {
-    var stringDefault = JsonNodeFactory.instance.stringNode(defaultValue);
-    if (defaultValue.contains("{")) {
-      return stringDefault;
-    }
+  public JsonNode valueOf(String input) {
+    var stringDefault = JsonNodeFactory.instance.stringNode(input);
     if (fieldType.getRawClass() == String.class) {
       return stringDefault;
     }
 
     try {
-      Object value = readValue(defaultValue, mapper);
+      Object value = readValue(input, fieldType);
       return mapper.valueToTree(value);
     } catch (JacksonException | IllegalArgumentException ex) {
       JacksonDefaultValueProvider.LOGGER.log(Level.WARNING,
@@ -43,26 +41,56 @@ public class StringValueLoader {
     }
   }
 
-  private Object readValue(String defaultValue, ObjectMapper objectMapper) {
+  private Object readValue(String input, JavaType targetType) {
     try {
-      var reader = objectMapper.reader().forType(fieldType);
-      return reader.readValue(defaultValue);
+      var reader = mapper.reader().forType(targetType);
+      return reader.readValue(input);
     } catch (JacksonException ex) {
-      if (fieldType.getRawClass().isEnum()) {
+      if (targetType.getRawClass().isEnum()) {
         try {
-          return objectMapper.convertValue(defaultValue, fieldType);
+          return mapper.convertValue(input, targetType);
         } catch (IllegalArgumentException enumEx) {
-          throw invalidDefault(defaultValue, enumEx);
+          throw invalidDefault(input, targetType, enumEx);
         }
       }
-      throw invalidDefault(defaultValue, ex);
+      throw invalidDefault(input, targetType, ex);
     }
   }
 
-  private IllegalArgumentException invalidDefault(String defaultValue, Throwable cause) {
+  private IllegalArgumentException invalidDefault(String defaultValue, JavaType targetType, Throwable cause) {
     return new IllegalArgumentException(
-        "Default value for field '" + field + "' is not valid JSON for type '" + fieldType.getTypeName()
+        "Default value for field '" + field + "' is not valid JSON for type '" + targetType.getTypeName()
             + "': " + defaultValue,
         cause);
+  }
+
+  public JsonNode valueCollectionAware(String input) {
+    var stringExample = JsonNodeFactory.instance.stringNode(input);
+    if (fieldType.getRawClass() == String.class) {
+      return stringExample;
+    }
+
+    Optional<JsonNode> parsed = tryReadValue(input, fieldType);
+    if (parsed.isPresent()) {
+      return parsed.get();
+    }
+    if (fieldType.isCollectionLikeType() || fieldType.isArrayType()) {
+      JavaType itemType = fieldType.getContentType();
+      if (itemType != null) {
+        parsed = tryReadValue(input, itemType);
+        if (parsed.isPresent()) {
+          return parsed.get();
+        }
+      }
+    }
+    return stringExample;
+  }
+
+  private Optional<JsonNode> tryReadValue(String input, JavaType targetType) {
+    try {
+      return Optional.of(mapper.valueToTree(readValue(input, targetType)));
+    } catch (Exception ex) {
+      return Optional.empty();
+    }
   }
 }
