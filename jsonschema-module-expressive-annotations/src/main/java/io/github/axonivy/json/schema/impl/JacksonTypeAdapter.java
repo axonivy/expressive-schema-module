@@ -1,6 +1,7 @@
 package io.github.axonivy.json.schema.impl;
 
 import com.fasterxml.classmate.ResolvedType;
+import com.github.victools.jsonschema.generator.FieldScope;
 import com.github.victools.jsonschema.generator.SchemaGenerationContext;
 
 import tools.jackson.databind.JavaType;
@@ -8,6 +9,10 @@ import tools.jackson.databind.JavaType;
 final class JacksonTypeAdapter {
 
   private JacksonTypeAdapter() {
+  }
+
+  static JavaType toJavaType(FieldScope field, SchemaGenerationContext context) {
+    return toJavaType(CustomTypeProvider.resolveEffectiveTypeFor(field, context), context);
   }
 
   static JavaType toJavaType(ResolvedType resolvedType, SchemaGenerationContext context) {

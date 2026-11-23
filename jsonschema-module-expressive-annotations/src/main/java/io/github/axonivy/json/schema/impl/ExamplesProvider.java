@@ -37,7 +37,7 @@ public class ExamplesProvider implements CustomPropertyDefinitionProvider<FieldS
     if (def == null) {
       return null;
     }
-    declareExamples(def, examples, scope.getName(), JacksonTypeAdapter.toJavaType(scope.getType(), context), context);
+    declareExamples(def, examples, scope.getName(), JacksonTypeAdapter.toJavaType(scope, context), context);
     return new CustomPropertyDefinition(def);
   }
 

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.axonivy.json.schema.annotations.CustomType;
 import io.github.axonivy.json.schema.annotations.Examples;
 import io.github.axonivy.json.schema.impl.JacksonDefaultValueProvider;
 import io.github.axonivy.json.schema.tests.TestExampleValues.ChatModel;
@@ -112,6 +113,21 @@ class TestExampleValues {
     var groupedScores = properties.get("groupedScores").get("examples").get(0);
     assertThat(groupedScores.get("scores").get(0).isIntegralNumber()).isTrue();
     assertThat(groupedScores.get("scores").get(0).asInt()).isEqualTo(1);
+  }
+
+  @Test
+  void examplesUseFieldCustomType() {
+    ObjectNode schema = new ExpressiveSchemaGenerator().generateSchema(CustomTypeExamples.class);
+    var example = schema.get("properties").get("value").get("examples").get(0);
+
+    assertThat(example.isString()).isTrue();
+    assertThat(example.asString()).isEqualTo("true");
+  }
+
+  static class CustomTypeExamples {
+    @CustomType(String.class)
+    @Examples({ "true" })
+    Object value;
   }
 
   static class TypedExamples {
