@@ -79,6 +79,9 @@ class TestDefaultValues {
   private static class BlackGarage {
     @JsonProperty(defaultValue = "#{id}")
     GarageId id;
+
+    @JsonProperty(defaultValue = "[ \"green27\" ]")
+    List<GarageId> partners;
   }
 
   @CustomType(String.class)

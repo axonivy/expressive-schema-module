@@ -1,8 +1,11 @@
 package io.github.axonivy.json.schema.impl;
 
+import java.util.List;
+import java.util.Collection;
 import java.util.logging.Level;
 
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.JsonNodeFactory;
@@ -44,7 +47,11 @@ public class StringValueLoader {
 
   private Object readValue(String defaultValue, ObjectMapper objectMapper) {
     try {
-      return objectMapper.reader().forType(fieldType).readValue(defaultValue);
+      var reader = objectMapper.reader().forType(fieldType);
+      if (Collection.class.isAssignableFrom(fieldType)) {
+        reader = objectMapper.reader().forType(new TypeReference<List<String>>() {});
+      }
+      return reader.readValue(defaultValue);
     } catch (JacksonException ex) {
       if (fieldType.isEnum()) {
         try {
